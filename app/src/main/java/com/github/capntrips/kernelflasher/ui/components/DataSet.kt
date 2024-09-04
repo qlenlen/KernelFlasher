@@ -13,17 +13,17 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun DataSet(
-    label: String,
-    labelColor: Color = Color.Unspecified,
-    labelStyle: TextStyle = MaterialTheme.typography.labelMedium,
-    content: @Composable (ColumnScope.() -> Unit)
+  label: String,
+  labelColor: Color = Color.Unspecified,
+  labelStyle: TextStyle = MaterialTheme.typography.labelMedium,
+  content: @Composable (ColumnScope.() -> Unit)
 ) {
-    Text(
-        text = label,
-        color = labelColor,
-        style = labelStyle
-    )
-    Column(Modifier.padding(start = 16.dp)) {
-        content()
-    }
+  Text(
+    text = label,
+    color = labelColor,
+    style = labelStyle
+  )
+  Column(Modifier.padding(start = 16.dp)) {
+    content()
+  }
 }

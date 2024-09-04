@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class FsMgrFlags(
-    val logical: Boolean = false
+  val logical: Boolean = false
 )

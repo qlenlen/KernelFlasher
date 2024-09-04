@@ -10,10 +10,10 @@ android {
 
     defaultConfig {
         applicationId "com.github.capntrips.kernelflasher"
-        minSdk 29
+        minSdk 33
         targetSdk 34
-        versionCode 20
-        versionName "1.0.0-alpha20"
+        versionCode 21
+        versionName "1.0.0-alpha21"
 
         javaCompileOptions {
             annotationProcessorOptions {

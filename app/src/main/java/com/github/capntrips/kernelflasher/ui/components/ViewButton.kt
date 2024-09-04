@@ -15,17 +15,17 @@ import com.github.capntrips.kernelflasher.R
 
 @Composable
 fun ViewButton(
-    onClick: () -> Unit
+  onClick: () -> Unit
 ) {
-    TextButton(
-        modifier = Modifier.padding(0.dp),
-        shape = RoundedCornerShape(4.0.dp),
-        contentPadding = PaddingValues(
-            horizontal = ButtonDefaults.ContentPadding.calculateLeftPadding(LayoutDirection.Ltr) - (6.667).dp,
-            vertical = ButtonDefaults.ContentPadding.calculateTopPadding()
-        ),
-        onClick = onClick
-    ) {
-        Text(stringResource(R.string.view), maxLines = 1)
-    }
+  TextButton(
+    modifier = Modifier.padding(0.dp),
+    shape = RoundedCornerShape(4.0.dp),
+    contentPadding = PaddingValues(
+      horizontal = ButtonDefaults.ContentPadding.calculateLeftPadding(LayoutDirection.Ltr) - (6.667).dp,
+      vertical = ButtonDefaults.ContentPadding.calculateTopPadding()
+    ),
+    onClick = onClick
+  ) {
+    Text(stringResource(R.string.view), maxLines = 1)
+  }
 }

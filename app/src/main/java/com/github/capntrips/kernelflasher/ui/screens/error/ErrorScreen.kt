@@ -23,29 +23,29 @@ import com.github.capntrips.kernelflasher.ui.theme.Orange500
 @ExperimentalMaterial3Api
 @Composable
 fun ErrorScreen(message: String) {
-    Scaffold { paddingValues ->
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize()
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(
-                    Icons.Filled.Warning,
-                    modifier = Modifier
-                        .width(48.dp)
-                        .height(48.dp),
-                    tint = Orange500,
-                    contentDescription = message
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    message,
-                    modifier = Modifier.padding(32.dp, 0.dp, 32.dp, 32.dp),
-                    style = MaterialTheme.typography.titleLarge,
-                )
-            }
-        }
+  Scaffold { paddingValues ->
+    Box(
+      contentAlignment = Alignment.Center,
+      modifier = Modifier
+        .padding(paddingValues)
+        .fillMaxSize()
+    ) {
+      Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(
+          Icons.Filled.Warning,
+          modifier = Modifier
+            .width(48.dp)
+            .height(48.dp),
+          tint = Orange500,
+          contentDescription = message
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+          message,
+          modifier = Modifier.padding(32.dp, 0.dp, 32.dp, 32.dp),
+          style = MaterialTheme.typography.titleLarge,
+        )
+      }
     }
+  }
 }

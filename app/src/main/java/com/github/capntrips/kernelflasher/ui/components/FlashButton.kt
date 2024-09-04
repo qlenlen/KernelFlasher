@@ -27,32 +27,32 @@ import kotlinx.serialization.ExperimentalSerializationApi
 @ExperimentalUnitApi
 @Composable
 fun FlashButton(
-    buttonText: String,
-    callback: (uri: Uri) -> Unit
+  buttonText: String,
+  callback: (uri: Uri) -> Unit
 ) {
-    val mainActivity = LocalContext.current as MainActivity
-    val result = remember { mutableStateOf<Uri?>(null) }
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
-        result.value = it
-        if (it == null) {
-            mainActivity.isAwaitingResult = false
-        }
+  val mainActivity = LocalContext.current as MainActivity
+  val result = remember { mutableStateOf<Uri?>(null) }
+  val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
+    result.value = it
+    if (it == null) {
+      mainActivity.isAwaitingResult = false
     }
-    OutlinedButton(
-        modifier = Modifier
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(4.dp),
-        onClick = {
-            mainActivity.isAwaitingResult = true
-            launcher.launch("*/*")
-        }
-    ) {
-        Text(buttonText)
+  }
+  OutlinedButton(
+    modifier = Modifier
+      .fillMaxWidth(),
+    shape = RoundedCornerShape(4.dp),
+    onClick = {
+      mainActivity.isAwaitingResult = true
+      launcher.launch("*/*")
     }
-    result.value?.let {uri ->
-        if (mainActivity.isAwaitingResult) {
-            callback.invoke(uri)
-        }
-        mainActivity.isAwaitingResult = false
+  ) {
+    Text(buttonText)
+  }
+  result.value?.let { uri ->
+    if (mainActivity.isAwaitingResult) {
+      callback.invoke(uri)
     }
+    mainActivity.isAwaitingResult = false
+  }
 }

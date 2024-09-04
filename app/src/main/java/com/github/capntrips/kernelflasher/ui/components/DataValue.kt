@@ -17,28 +17,28 @@ import androidx.compose.ui.text.style.TextOverflow
 
 @Composable
 fun RowScope.DataValue(
-    value: String,
-    color: Color = Color.Unspecified,
-    style: TextStyle = MaterialTheme.typography.titleSmall,
-    clickable: Boolean = false,
+  value: String,
+  color: Color = Color.Unspecified,
+  style: TextStyle = MaterialTheme.typography.titleSmall,
+  clickable: Boolean = false,
 ) {
-    SelectionContainer(Modifier.alignByBaseline()) {
-        var clicked by remember { mutableStateOf(false) }
-        val modifier = if (clickable) {
-            Modifier
-                .clickable { clicked = !clicked }
-                .alignByBaseline()
-        } else {
-            Modifier
-                .alignByBaseline()
-        }
-        Text(
-            modifier = modifier,
-            text = value,
-            color = color,
-            style = style,
-            maxLines = if (clicked) Int.MAX_VALUE else 1,
-            overflow = if (clicked) TextOverflow.Visible else TextOverflow.Ellipsis
-        )
+  SelectionContainer(Modifier.alignByBaseline()) {
+    var clicked by remember { mutableStateOf(false) }
+    val modifier = if (clickable) {
+      Modifier
+        .clickable { clicked = !clicked }
+        .alignByBaseline()
+    } else {
+      Modifier
+        .alignByBaseline()
     }
+    Text(
+      modifier = modifier,
+      text = value,
+      color = color,
+      style = style,
+      maxLines = if (clicked) Int.MAX_VALUE else 1,
+      overflow = if (clicked) TextOverflow.Visible else TextOverflow.Ellipsis
+    )
+  }
 }

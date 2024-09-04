@@ -7,18 +7,18 @@ import androidx.room.Query
 
 @Dao
 interface UpdateDao {
-    @Query("""SELECT * FROM "update"""")
-    fun getAll(): List<Update>
+  @Query("""SELECT * FROM "update"""")
+  fun getAll(): List<Update>
 
-    @Query("""SELECT * FROM "update" WHERE id IN (:id)""")
-    fun load(id: Int): Update
+  @Query("""SELECT * FROM "update" WHERE id IN (:id)""")
+  fun load(id: Int): Update
 
-    @Insert
-    fun insert(update: Update): Long
+  @Insert
+  fun insert(update: Update): Long
 
-    @androidx.room.Update
-    fun update(update: Update)
+  @androidx.room.Update
+  fun update(update: Update)
 
-    @Delete
-    fun delete(update: Update)
+  @Delete
+  fun delete(update: Update)
 }

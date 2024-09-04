@@ -7,16 +7,20 @@ import java.io.OutputStream
 import java.nio.charset.Charset
 
 object ExtendedFile {
-    private fun ExtendedFile.reader(charset: Charset = Charsets.UTF_8): InputStreamReader = inputStream().reader(charset)
+  private fun ExtendedFile.reader(charset: Charset = Charsets.UTF_8): InputStreamReader =
+    inputStream().reader(charset)
 
-    private fun ExtendedFile.writeBytes(array: kotlin.ByteArray): Unit = outputStream().use { it.write(array) }
+  private fun ExtendedFile.writeBytes(array: kotlin.ByteArray): Unit =
+    outputStream().use { it.write(array) }
 
-    fun ExtendedFile.readText(charset: Charset = Charsets.UTF_8): String = reader(charset).use { it.readText() }
+  fun ExtendedFile.readText(charset: Charset = Charsets.UTF_8): String =
+    reader(charset).use { it.readText() }
 
-    @Suppress("unused")
-    fun ExtendedFile.writeText(text: String, charset: Charset = Charsets.UTF_8): Unit = writeBytes(text.toByteArray(charset))
+  @Suppress("unused")
+  fun ExtendedFile.writeText(text: String, charset: Charset = Charsets.UTF_8): Unit =
+    writeBytes(text.toByteArray(charset))
 
-    fun ExtendedFile.inputStream(): InputStream = newInputStream()
+  fun ExtendedFile.inputStream(): InputStream = newInputStream()
 
-    fun ExtendedFile.outputStream(): OutputStream = newOutputStream()
+  fun ExtendedFile.outputStream(): OutputStream = newOutputStream()
 }

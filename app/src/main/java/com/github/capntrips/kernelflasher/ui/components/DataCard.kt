@@ -16,31 +16,33 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun DataCard(
-    title: String,
-    button: @Composable (() -> Unit)? = null,
-    content: @Composable (ColumnScope.() -> Unit)? = null
+  title: String,
+  button: @Composable (() -> Unit)? = null,
+  content: @Composable (ColumnScope.() -> Unit)? = null
 ) {
-    Card {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(0.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                modifier = Modifier.padding(0.dp, 9.dp, 8.dp, 9.dp).weight(1.0f),
-                text = title,
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.titleLarge
-            )
-            if (button != null) {
-                button()
-            }
-        }
-        if (content != null) {
-            Spacer(Modifier.height(10.dp))
-            content()
-        }
+  Card {
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(0.dp),
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      Text(
+        modifier = Modifier
+          .padding(0.dp, 9.dp, 8.dp, 9.dp)
+          .weight(1.0f),
+        text = title,
+        color = MaterialTheme.colorScheme.primary,
+        style = MaterialTheme.typography.titleLarge
+      )
+      if (button != null) {
+        button()
+      }
     }
+    if (content != null) {
+      Spacer(Modifier.height(10.dp))
+      content()
+    }
+  }
 }

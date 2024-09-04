@@ -9,5 +9,5 @@ import com.github.capntrips.kernelflasher.common.types.room.updates.UpdateDao
 @Database(entities = [Update::class], version = 1)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun updateDao(): UpdateDao
+  abstract fun updateDao(): UpdateDao
 }

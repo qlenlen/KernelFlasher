@@ -18,27 +18,27 @@ import androidx.compose.ui.unit.dp
 // TODO: Remove when card is supported in material3: https://m3.material.io/components/cards/implementation/android
 @Composable
 fun Card(
-    shape: Shape = RoundedCornerShape(4.dp),
-    backgroundColor: Color = MaterialTheme.colorScheme.surface,
-    contentColor: Color = MaterialTheme.colorScheme.onSurface,
-    border: BorderStroke? = null,
-    tonalElevation: Dp = 2.dp,
-    shadowElevation: Dp = 1.dp,
-    content: @Composable ColumnScope.() -> Unit
+  shape: Shape = RoundedCornerShape(4.dp),
+  backgroundColor: Color = MaterialTheme.colorScheme.surface,
+  contentColor: Color = MaterialTheme.colorScheme.onSurface,
+  border: BorderStroke? = null,
+  tonalElevation: Dp = 2.dp,
+  shadowElevation: Dp = 1.dp,
+  content: @Composable ColumnScope.() -> Unit
 ) {
-    Surface(
-        shape = shape,
-        color = backgroundColor,
-        contentColor = contentColor,
-        tonalElevation = tonalElevation,
-        shadowElevation = shadowElevation,
-        border = border
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(18.dp, (13.788).dp, 18.dp, 18.dp),
-            content = content
-        )
-    }
+  Surface(
+    shape = shape,
+    color = backgroundColor,
+    contentColor = contentColor,
+    tonalElevation = tonalElevation,
+    shadowElevation = shadowElevation,
+    border = border
+  ) {
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(18.dp, (13.788).dp, 18.dp, 18.dp),
+      content = content
+    )
+  }
 }

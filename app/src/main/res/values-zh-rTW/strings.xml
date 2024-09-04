@@ -9,6 +9,7 @@
     <string name="kernel_name">核心名</string>
     <string name="kernel_version">核心版本</string>
     <string name="slot_suffix">插槽字尾</string>
+    <string name="slot">插槽</string>
     <string name="slot_a">插槽 A</string>
     <string name="slot_b">插槽 B</string>
     <string name="boot_sha1">Boot 雜湊</string>

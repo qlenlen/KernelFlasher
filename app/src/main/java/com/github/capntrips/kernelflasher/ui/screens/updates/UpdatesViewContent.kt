@@ -30,66 +30,74 @@ import kotlinx.serialization.ExperimentalSerializationApi
 @ExperimentalSerializationApi
 @Composable
 fun ColumnScope.UpdatesViewContent(
-    viewModel: UpdatesViewModel,
-    navController: NavController
+  viewModel: UpdatesViewModel,
+  navController: NavController
 ) {
-    val context = LocalContext.current
-    viewModel.currentUpdate?.let { currentUpdate ->
-        DataCard(currentUpdate.kernelName) {
-            val cardWidth = remember { mutableIntStateOf(0) }
-            DataRow(stringResource(R.string.version), currentUpdate.kernelVersion, mutableMaxWidth = cardWidth)
-            DataRow(stringResource(R.string.date_released), DateSerializer.formatter.format(currentUpdate.kernelDate), mutableMaxWidth = cardWidth)
-            DataRow(
-                label = stringResource(R.string.last_updated),
-                value = UpdatesViewModel.lastUpdatedFormatter.format(currentUpdate.lastUpdated!!),
-                labelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.33f),
-                labelStyle = MaterialTheme.typography.labelMedium.copy(
-                    fontStyle = FontStyle.Italic
-                ),
-                valueColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.33f),
-                valueStyle = MaterialTheme.typography.titleSmall.copy(
-                    fontStyle = FontStyle.Italic,
-                ),
-                mutableMaxWidth = cardWidth
-            )
-        }
-        AnimatedVisibility(!viewModel.isRefreshing) {
-            Column {
-                Spacer(Modifier.height(5.dp))
-                OutlinedButton(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    shape = RoundedCornerShape(4.dp),
-                    onClick = { viewModel.downloadChangelog { navController.navigate("updates/view/${currentUpdate.id}/changelog") } }
-                ) {
-                    Text(stringResource(R.string.changelog))
-                }
-                // TODO: add download progress indicator
-                OutlinedButton(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    shape = RoundedCornerShape(4.dp),
-                    onClick = { viewModel.downloadKernel(context) }
-                ) {
-                    Text(stringResource(R.string.download))
-                }
-                OutlinedButton(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    shape = RoundedCornerShape(4.dp),
-                    onClick = { viewModel.update() }
-                ) {
-                    Text(stringResource(R.string.check_for_updates))
-                }
-                OutlinedButton(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    shape = RoundedCornerShape(4.dp),
-                    onClick = { viewModel.delete { navController.popBackStack() } }
-                ) {
-                    Text(stringResource(R.string.delete))
-                }
-            }
-        }
+  val context = LocalContext.current
+  viewModel.currentUpdate?.let { currentUpdate ->
+    DataCard(currentUpdate.kernelName) {
+      val cardWidth = remember { mutableIntStateOf(0) }
+      DataRow(
+        stringResource(R.string.version),
+        currentUpdate.kernelVersion,
+        mutableMaxWidth = cardWidth
+      )
+      DataRow(
+        stringResource(R.string.date_released),
+        DateSerializer.formatter.format(currentUpdate.kernelDate),
+        mutableMaxWidth = cardWidth
+      )
+      DataRow(
+        label = stringResource(R.string.last_updated),
+        value = UpdatesViewModel.lastUpdatedFormatter.format(currentUpdate.lastUpdated!!),
+        labelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.33f),
+        labelStyle = MaterialTheme.typography.labelMedium.copy(
+          fontStyle = FontStyle.Italic
+        ),
+        valueColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.33f),
+        valueStyle = MaterialTheme.typography.titleSmall.copy(
+          fontStyle = FontStyle.Italic,
+        ),
+        mutableMaxWidth = cardWidth
+      )
     }
+    AnimatedVisibility(!viewModel.isRefreshing) {
+      Column {
+        Spacer(Modifier.height(5.dp))
+        OutlinedButton(
+          modifier = Modifier
+            .fillMaxWidth(),
+          shape = RoundedCornerShape(4.dp),
+          onClick = { viewModel.downloadChangelog { navController.navigate("updates/view/${currentUpdate.id}/changelog") } }
+        ) {
+          Text(stringResource(R.string.changelog))
+        }
+        // TODO: add download progress indicator
+        OutlinedButton(
+          modifier = Modifier
+            .fillMaxWidth(),
+          shape = RoundedCornerShape(4.dp),
+          onClick = { viewModel.downloadKernel(context) }
+        ) {
+          Text(stringResource(R.string.download))
+        }
+        OutlinedButton(
+          modifier = Modifier
+            .fillMaxWidth(),
+          shape = RoundedCornerShape(4.dp),
+          onClick = { viewModel.update() }
+        ) {
+          Text(stringResource(R.string.check_for_updates))
+        }
+        OutlinedButton(
+          modifier = Modifier
+            .fillMaxWidth(),
+          shape = RoundedCornerShape(4.dp),
+          onClick = { viewModel.delete { navController.popBackStack() } }
+        ) {
+          Text(stringResource(R.string.delete))
+        }
+      }
+    }
+  }
 }

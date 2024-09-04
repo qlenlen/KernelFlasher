@@ -26,107 +26,107 @@ import com.github.capntrips.kernelflasher.ui.components.SlotCard
 @ExperimentalUnitApi
 @Composable
 fun ColumnScope.SlotContent(
-    viewModel: SlotViewModel,
-    slotSuffix: String,
-    navController: NavController
+  viewModel: SlotViewModel,
+  slotSuffix: String,
+  navController: NavController
 ) {
-    val context = LocalContext.current
-    SlotCard(
-        title = stringResource(if (slotSuffix == "_a") R.string.slot_a else if (slotSuffix == "_b") R.string.slot_b else R.string.slot),
-        viewModel = viewModel,
-        navController = navController,
-        isSlotScreen = true
-    )
-    AnimatedVisibility(!viewModel.isRefreshing) {
-        Column {
-            Spacer(Modifier.height(5.dp))
-            if (viewModel.isActive) {
-                OutlinedButton(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    shape = RoundedCornerShape(4.dp),
-                    onClick = {
-                        navController.navigate("slot$slotSuffix/flash")
-                    }
-                ) {
-                    Text(stringResource(R.string.flash))
-                }
-            }
-            OutlinedButton(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(4.dp),
-                onClick = {
-                    viewModel.clearFlash(context)
-                    navController.navigate("slot$slotSuffix/backup")
-                }
-            ) {
-                Text(stringResource(R.string.backup))
-            }
-            if (viewModel.isActive) {
-                OutlinedButton(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    shape = RoundedCornerShape(4.dp),
-                    onClick = {
-                        navController.navigate("slot$slotSuffix/backups")
-                    }
-                ) {
-                    Text(stringResource(R.string.restore))
-                }
-            }
-            OutlinedButton(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(4.dp),
-                onClick = { if (!viewModel.isRefreshing) viewModel.getKernel(context) }
-            ) {
-                Text(stringResource(R.string.check_kernel_version))
-            }
-            if (viewModel.hasVendorDlkm) {
-                AnimatedVisibility(!viewModel.isRefreshing) {
-                    AnimatedVisibility(viewModel.isVendorDlkmMounted) {
-                        OutlinedButton(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            shape = RoundedCornerShape(4.dp),
-                            onClick = { viewModel.unmountVendorDlkm(context) }
-                        ) {
-                            Text(stringResource(R.string.unmount_vendor_dlkm))
-                        }
-                    }
-                    AnimatedVisibility(!viewModel.isVendorDlkmMounted && viewModel.isVendorDlkmMapped) {
-                        Column {
-                            OutlinedButton(
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                shape = RoundedCornerShape(4.dp),
-                                onClick = { viewModel.mountVendorDlkm(context) }
-                            ) {
-                                Text(stringResource(R.string.mount_vendor_dlkm))
-                            }
-                            OutlinedButton(
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                shape = RoundedCornerShape(4.dp),
-                                onClick = { viewModel.unmapVendorDlkm(context) }
-                            ) {
-                                Text(stringResource(R.string.unmap_vendor_dlkm))
-                            }
-                        }
-                    }
-                    AnimatedVisibility(!viewModel.isVendorDlkmMounted && !viewModel.isVendorDlkmMapped) {
-                        OutlinedButton(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            shape = RoundedCornerShape(4.dp),
-                            onClick = { viewModel.mapVendorDlkm(context) }
-                        ) {
-                            Text(stringResource(R.string.map_vendor_dlkm))
-                        }
-                    }
-                }
-            }
+  val context = LocalContext.current
+  SlotCard(
+    title = stringResource(if (slotSuffix == "_a") R.string.slot_a else if (slotSuffix == "_b") R.string.slot_b else R.string.slot),
+    viewModel = viewModel,
+    navController = navController,
+    isSlotScreen = true
+  )
+  AnimatedVisibility(!viewModel.isRefreshing) {
+    Column {
+      Spacer(Modifier.height(5.dp))
+      if (viewModel.isActive) {
+        OutlinedButton(
+          modifier = Modifier
+            .fillMaxWidth(),
+          shape = RoundedCornerShape(4.dp),
+          onClick = {
+            navController.navigate("slot$slotSuffix/flash")
+          }
+        ) {
+          Text(stringResource(R.string.flash))
         }
+      }
+      OutlinedButton(
+        modifier = Modifier
+          .fillMaxWidth(),
+        shape = RoundedCornerShape(4.dp),
+        onClick = {
+          viewModel.clearFlash(context)
+          navController.navigate("slot$slotSuffix/backup")
+        }
+      ) {
+        Text(stringResource(R.string.backup))
+      }
+      if (viewModel.isActive) {
+        OutlinedButton(
+          modifier = Modifier
+            .fillMaxWidth(),
+          shape = RoundedCornerShape(4.dp),
+          onClick = {
+            navController.navigate("slot$slotSuffix/backups")
+          }
+        ) {
+          Text(stringResource(R.string.restore))
+        }
+      }
+      OutlinedButton(
+        modifier = Modifier
+          .fillMaxWidth(),
+        shape = RoundedCornerShape(4.dp),
+        onClick = { if (!viewModel.isRefreshing) viewModel.getKernel(context) }
+      ) {
+        Text(stringResource(R.string.check_kernel_version))
+      }
+      if (viewModel.hasVendorDlkm) {
+        AnimatedVisibility(!viewModel.isRefreshing) {
+          AnimatedVisibility(viewModel.isVendorDlkmMounted) {
+            OutlinedButton(
+              modifier = Modifier
+                .fillMaxWidth(),
+              shape = RoundedCornerShape(4.dp),
+              onClick = { viewModel.unmountVendorDlkm(context) }
+            ) {
+              Text(stringResource(R.string.unmount_vendor_dlkm))
+            }
+          }
+          AnimatedVisibility(!viewModel.isVendorDlkmMounted && viewModel.isVendorDlkmMapped) {
+            Column {
+              OutlinedButton(
+                modifier = Modifier
+                  .fillMaxWidth(),
+                shape = RoundedCornerShape(4.dp),
+                onClick = { viewModel.mountVendorDlkm(context) }
+              ) {
+                Text(stringResource(R.string.mount_vendor_dlkm))
+              }
+              OutlinedButton(
+                modifier = Modifier
+                  .fillMaxWidth(),
+                shape = RoundedCornerShape(4.dp),
+                onClick = { viewModel.unmapVendorDlkm(context) }
+              ) {
+                Text(stringResource(R.string.unmap_vendor_dlkm))
+              }
+            }
+          }
+          AnimatedVisibility(!viewModel.isVendorDlkmMounted && !viewModel.isVendorDlkmMapped) {
+            OutlinedButton(
+              modifier = Modifier
+                .fillMaxWidth(),
+              shape = RoundedCornerShape(4.dp),
+              onClick = { viewModel.mapVendorDlkm(context) }
+            ) {
+              Text(stringResource(R.string.map_vendor_dlkm))
+            }
+          }
+        }
+      }
     }
+  }
 }

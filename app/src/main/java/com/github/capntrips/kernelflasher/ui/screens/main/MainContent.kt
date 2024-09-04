@@ -28,88 +28,101 @@ import kotlinx.serialization.ExperimentalSerializationApi
 @ExperimentalSerializationApi
 @Composable
 fun ColumnScope.MainContent(
-    viewModel: MainViewModel,
-    navController: NavController
+  viewModel: MainViewModel,
+  navController: NavController
 ) {
-    val context = LocalContext.current
-    DataCard (title = stringResource(R.string.device)) {
-        val cardWidth = remember { mutableIntStateOf(0) }
-        DataRow(stringResource(R.string.model), "${Build.MODEL} (${Build.DEVICE})", mutableMaxWidth = cardWidth)
-        DataRow(stringResource(R.string.build_number), Build.ID, mutableMaxWidth = cardWidth)
-        DataRow(stringResource(R.string.kernel_version), viewModel.kernelVersion, mutableMaxWidth = cardWidth, clickable = true)
-        if (viewModel.isAb) {
-            DataRow(stringResource(R.string.slot_suffix), viewModel.slotSuffix, mutableMaxWidth = cardWidth)
-        }
-    }
-    Spacer(Modifier.height(16.dp))
-    SlotCard(
-        title = stringResource(if (viewModel.isAb) R.string.slot_a else R.string.slot),
-        viewModel = viewModel.slotA,
-        navController = navController
+  val context = LocalContext.current
+  DataCard(title = stringResource(R.string.device)) {
+    val cardWidth = remember { mutableIntStateOf(0) }
+    DataRow(
+      stringResource(R.string.model),
+      "${Build.MODEL} (${Build.DEVICE})",
+      mutableMaxWidth = cardWidth
+    )
+    DataRow(stringResource(R.string.build_number), Build.ID, mutableMaxWidth = cardWidth)
+    DataRow(
+      stringResource(R.string.kernel_version),
+      viewModel.kernelVersion,
+      mutableMaxWidth = cardWidth,
+      clickable = true
     )
     if (viewModel.isAb) {
-        Spacer(Modifier.height(16.dp))
-        SlotCard(
-            title = stringResource(R.string.slot_b),
-            viewModel = viewModel.slotB!!,
-            navController = navController
-        )
+      DataRow(
+        stringResource(R.string.slot_suffix),
+        viewModel.slotSuffix,
+        mutableMaxWidth = cardWidth
+      )
     }
+  }
+  Spacer(Modifier.height(16.dp))
+  SlotCard(
+    title = stringResource(if (viewModel.isAb) R.string.slot_a else R.string.slot),
+    viewModel = viewModel.slotA,
+    navController = navController
+  )
+  if (viewModel.isAb) {
     Spacer(Modifier.height(16.dp))
-    AnimatedVisibility(!viewModel.isRefreshing) {
-        OutlinedButton(
-            modifier = Modifier
-                .fillMaxWidth(),
-            shape = RoundedCornerShape(4.dp),
-            onClick = { navController.navigate("backups") }
-        ) {
-            Text(stringResource(R.string.backups))
-        }
-    }
-    AnimatedVisibility(!viewModel.isRefreshing) {
-        OutlinedButton(
-            modifier = Modifier
-                .fillMaxWidth(),
-            shape = RoundedCornerShape(4.dp),
-            onClick = { navController.navigate("updates") }
-        ) {
-            Text(stringResource(R.string.updates))
-        }
-    }
-    if (viewModel.hasRamoops) {
-        OutlinedButton(
-            modifier = Modifier
-                .fillMaxWidth(),
-            shape = RoundedCornerShape(4.dp),
-            onClick = { viewModel.saveRamoops(context) }
-        ) {
-            Text(stringResource(R.string.save_ramoops))
-        }
-    }
+    SlotCard(
+      title = stringResource(R.string.slot_b),
+      viewModel = viewModel.slotB!!,
+      navController = navController
+    )
+  }
+  Spacer(Modifier.height(16.dp))
+  AnimatedVisibility(!viewModel.isRefreshing) {
     OutlinedButton(
-        modifier = Modifier
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(4.dp),
-        onClick = { viewModel.saveDmesg(context) }
+      modifier = Modifier
+        .fillMaxWidth(),
+      shape = RoundedCornerShape(4.dp),
+      onClick = { navController.navigate("backups") }
     ) {
-        Text(stringResource(R.string.save_dmesg))
+      Text(stringResource(R.string.backups))
     }
+  }
+  AnimatedVisibility(!viewModel.isRefreshing) {
     OutlinedButton(
-        modifier = Modifier
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(4.dp),
-        onClick = { viewModel.saveLogcat(context) }
+      modifier = Modifier
+        .fillMaxWidth(),
+      shape = RoundedCornerShape(4.dp),
+      onClick = { navController.navigate("updates") }
     ) {
-        Text(stringResource(R.string.save_logcat))
+      Text(stringResource(R.string.updates))
     }
-    AnimatedVisibility(!viewModel.isRefreshing) {
-        OutlinedButton(
-            modifier = Modifier
-                .fillMaxWidth(),
-            shape = RoundedCornerShape(4.dp),
-            onClick = { navController.navigate("reboot") }
-        ) {
-            Text(stringResource(R.string.reboot))
-        }
+  }
+  if (viewModel.hasRamoops) {
+    OutlinedButton(
+      modifier = Modifier
+        .fillMaxWidth(),
+      shape = RoundedCornerShape(4.dp),
+      onClick = { viewModel.saveRamoops(context) }
+    ) {
+      Text(stringResource(R.string.save_ramoops))
     }
+  }
+  OutlinedButton(
+    modifier = Modifier
+      .fillMaxWidth(),
+    shape = RoundedCornerShape(4.dp),
+    onClick = { viewModel.saveDmesg(context) }
+  ) {
+    Text(stringResource(R.string.save_dmesg))
+  }
+  OutlinedButton(
+    modifier = Modifier
+      .fillMaxWidth(),
+    shape = RoundedCornerShape(4.dp),
+    onClick = { viewModel.saveLogcat(context) }
+  ) {
+    Text(stringResource(R.string.save_logcat))
+  }
+  AnimatedVisibility(!viewModel.isRefreshing) {
+    OutlinedButton(
+      modifier = Modifier
+        .fillMaxWidth(),
+      shape = RoundedCornerShape(4.dp),
+      onClick = { navController.navigate("reboot") }
+    ) {
+      Text(stringResource(R.string.reboot))
+    }
+  }
 }

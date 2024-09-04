@@ -27,25 +27,25 @@ import kotlinx.serialization.ExperimentalSerializationApi
 @ExperimentalSerializationApi
 @Composable
 fun ColumnScope.UpdatesAddContent(
-    viewModel: UpdatesViewModel,
-    navController: NavController
+  viewModel: UpdatesViewModel,
+  navController: NavController
 ) {
-    @Suppress("UNUSED_VARIABLE") val context = LocalContext.current
-    var url by remember { mutableStateOf("") }
-    OutlinedTextField(
-        value = url,
-        onValueChange = { url = it },
-        label = { Text(stringResource(R.string.url)) },
-        modifier = Modifier
-            .fillMaxWidth()
-    )
-    Spacer(Modifier.height(5.dp))
-    OutlinedButton(
-        modifier = Modifier
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(4.dp),
-        onClick = { viewModel.add(url) { navController.navigate("updates/view/$it") { popUpTo("updates") } } }
-    ) {
-        Text(stringResource(R.string.add))
-    }
+  @Suppress("UNUSED_VARIABLE") val context = LocalContext.current
+  var url by remember { mutableStateOf("") }
+  OutlinedTextField(
+    value = url,
+    onValueChange = { url = it },
+    label = { Text(stringResource(R.string.url)) },
+    modifier = Modifier
+      .fillMaxWidth()
+  )
+  Spacer(Modifier.height(5.dp))
+  OutlinedButton(
+    modifier = Modifier
+      .fillMaxWidth(),
+    shape = RoundedCornerShape(4.dp),
+    onClick = { viewModel.add(url) { navController.navigate("updates/view/$it") { popUpTo("updates") } } }
+  ) {
+    Text(stringResource(R.string.add))
+  }
 }

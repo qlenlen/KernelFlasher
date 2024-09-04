@@ -19,7 +19,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.github.capntrips.kernelflasher.R
@@ -45,75 +46,77 @@ import kotlinx.serialization.ExperimentalSerializationApi
 @ExperimentalSerializationApi
 @Composable
 fun RefreshableScreen(
-    viewModel: MainViewModel,
-    navController: NavController,
-    swipeEnabled: Boolean = false,
-    content: @Composable ColumnScope.() -> Unit
+  viewModel: MainViewModel,
+  navController: NavController,
+  swipeEnabled: Boolean = false,
+  content: @Composable ColumnScope.() -> Unit
 ) {
-    val statusBar = WindowInsets.statusBars.only(WindowInsetsSides.Top).asPaddingValues()
-    val navigationBars = WindowInsets.navigationBars.asPaddingValues()
-    val context = LocalContext.current
-    val state = rememberPullRefreshState(viewModel.isRefreshing, onRefresh = {
-        viewModel.refresh(context)
-    })
-    Scaffold(
-        topBar = {
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(statusBar)) {
-                if (navController.previousBackStackEntry != null) {
-                    AnimatedVisibility(
-                        !viewModel.isRefreshing,
-                        enter = fadeIn(),
-                        exit = fadeOut()
-                    ) {
-                        IconButton(
-                            onClick = { navController.popBackStack() },
-                            modifier = Modifier.padding(16.dp, 8.dp, 0.dp, 8.dp)
-                        ) {
-                            Icon(
-                                Icons.Filled.ArrowBack,
-                                contentDescription = stringResource(R.string.back),
-                                tint = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)) {
-                    Text(
-                        modifier = Modifier.align(Alignment.Center),
-                        text = stringResource(R.string.app_name),
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                }
+  val statusBar = WindowInsets.statusBars.only(WindowInsetsSides.Top).asPaddingValues()
+  val navigationBars = WindowInsets.navigationBars.asPaddingValues()
+  val context = LocalContext.current
+  val state = rememberPullRefreshState(viewModel.isRefreshing, onRefresh = {
+    viewModel.refresh(context)
+  })
+  Scaffold(
+    topBar = {
+      Box(
+        Modifier
+          .fillMaxWidth()
+          .padding(statusBar)
+      ) {
+        if (navController.previousBackStackEntry != null) {
+          AnimatedVisibility(
+            !viewModel.isRefreshing,
+            enter = fadeIn(),
+            exit = fadeOut()
+          ) {
+            IconButton(
+              onClick = { navController.popBackStack() },
+              modifier = Modifier.padding(16.dp, 8.dp, 0.dp, 8.dp)
+            ) {
+              Icon(
+                Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = stringResource(R.string.back),
+                tint = MaterialTheme.colorScheme.onSurface
+              )
             }
+          }
         }
-    ) { paddingValues ->
         Box(
-            modifier = Modifier
-                .padding(paddingValues)
-                .pullRefresh(state, swipeEnabled)
-                .fillMaxSize(),
+          Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .padding(16.dp, 0.dp, 16.dp, 16.dp + navigationBars.calculateBottomPadding())
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
-                content = content
-            )
-            PullRefreshIndicator(
-                viewModel.isRefreshing,
-                state = state,
-                modifier = Modifier.align(Alignment.TopCenter),
-                backgroundColor = MaterialTheme.colorScheme.background,
-                contentColor = MaterialTheme.colorScheme.primaryContainer,
-                scale = true
-            )
+          Text(
+            modifier = Modifier.align(Alignment.Center),
+            text = "QMod Flasher",
+            style = MaterialTheme.typography.headlineSmall
+          )
         }
+      }
     }
+  ) { paddingValues ->
+    Box(
+      modifier = Modifier
+        .padding(paddingValues)
+        .pullRefresh(state, swipeEnabled)
+        .fillMaxSize(),
+    ) {
+      Column(
+        modifier = Modifier
+          .padding(16.dp, 0.dp, 16.dp, 16.dp + navigationBars.calculateBottomPadding())
+          .fillMaxSize()
+          .verticalScroll(rememberScrollState()),
+        content = content
+      )
+      PullRefreshIndicator(
+        viewModel.isRefreshing,
+        state = state,
+        modifier = Modifier.align(Alignment.TopCenter),
+        backgroundColor = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.primaryContainer,
+        scale = true
+      )
+    }
+  }
 }

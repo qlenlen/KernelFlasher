@@ -4,7 +4,7 @@ compose-compiler = "1.5.6"
 
 androidx-activity-compose = "1.9.1"
 androidx-appcompat = "1.7.0"
-androidx-compose = "1.6.8"
+androidx-compose = "1.7.0"
 androidx-compose-material3 = "1.2.1"
 androidx-core-ktx = "1.13.1"
 androidx-core-splashscreen = "1.0.1"

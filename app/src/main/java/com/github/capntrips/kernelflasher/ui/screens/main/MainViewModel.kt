@@ -61,7 +61,7 @@ class MainViewModel(
     PartitionUtil.init(context, fileSystemManager)
     kernelVersion = Shell.cmd("echo $(uname -r) $(uname -v)").exec().out[0]
     slotSuffix = Shell.cmd("getprop ro.boot.slot_suffix").exec().out[0]
-    backups = BackupsViewModel(context, fileSystemManager, navController, _isRefreshing, _backups)
+    backups = BackupsViewModel(fileSystemManager, navController, _isRefreshing, _backups)
     updates = UpdatesViewModel(context, fileSystemManager, navController, _isRefreshing)
     reboot = RebootViewModel(context, fileSystemManager, navController, _isRefreshing)
     // https://cs.android.com/android/platform/superproject/+/android-14.0.0_r18:bootable/recovery/recovery.cpp;l=320
@@ -129,7 +129,7 @@ class MainViewModel(
       if (isAb) {
         slotB!!.refresh(context)
       }
-      backups.refresh(context)
+      backups.refresh()
     }
   }
 

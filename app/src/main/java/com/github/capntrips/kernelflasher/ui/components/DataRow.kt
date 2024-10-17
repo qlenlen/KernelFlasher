@@ -2,6 +2,7 @@ package com.github.capntrips.kernelflasher.ui.components
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -14,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun DataRow(
@@ -27,7 +29,7 @@ fun DataRow(
   clickable: Boolean = false,
 ) {
   Row {
-    val modifier = if (mutableMaxWidth != null) {
+    val labelModifier = if (mutableMaxWidth != null) {
       var maxWidth by mutableMaxWidth
       Modifier
         .layout { measurable, constraints ->
@@ -39,16 +41,21 @@ fun DataRow(
         }
         .alignByBaseline()
     } else {
-      Modifier
-        .alignByBaseline()
+      Modifier.alignByBaseline()
     }
     Text(
-      modifier = modifier,
+      modifier = labelModifier.then(Modifier.padding(top = 2.dp)),
       text = label,
       color = labelColor,
-      style = labelStyle
+      style = labelStyle,
+      fontSize = 12.sp
     )
     Spacer(Modifier.width(8.dp))
-    DataValue(value, valueColor, valueStyle, clickable)
+    DataValue(
+      value = value,
+      color = valueColor,
+      style = valueStyle,
+      clickable = clickable,
+    )
   }
 }

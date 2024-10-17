@@ -1,6 +1,5 @@
 [versions]
 kotlin = "2.0.21"
-compose-compiler = "1.5.6"
 
 androidx-activity-compose = "1.9.1"
 androidx-appcompat = "1.7.0"
@@ -18,6 +17,7 @@ okhttp = "4.11.0"
 
 android-application = "8.3.2"
 devtools-ksp = "2.0.21-1.0.25"
+ui-tooling-preview-android = "1.7.4"
 
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidx-activity-compose" }
@@ -40,9 +40,11 @@ libsu-nio = { group = "com.github.topjohnwu.libsu", name = "nio", version.ref = 
 libsu-service = { group = "com.github.topjohnwu.libsu", name = "service", version.ref = "libsu" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+androidx-ui-tooling-preview-android = { group = "androidx.compose.ui", name = "ui-tooling-preview-android", version.ref = "ui-tooling-preview-android" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "android-application" }
 devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "devtools-ksp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

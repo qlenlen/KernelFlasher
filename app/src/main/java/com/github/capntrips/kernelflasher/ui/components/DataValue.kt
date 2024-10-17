@@ -1,6 +1,7 @@
 package com.github.capntrips.kernelflasher.ui.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.MaterialTheme
@@ -14,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun RowScope.DataValue(
@@ -22,18 +24,19 @@ fun RowScope.DataValue(
   style: TextStyle = MaterialTheme.typography.titleSmall,
   clickable: Boolean = false,
 ) {
-  SelectionContainer(Modifier.alignByBaseline()) {
+  SelectionContainer(
+    modifier = Modifier.alignByBaseline()
+  ) {
     var clicked by remember { mutableStateOf(false) }
-    val modifier = if (clickable) {
+    val textModifier = if (clickable) {
       Modifier
         .clickable { clicked = !clicked }
         .alignByBaseline()
     } else {
-      Modifier
-        .alignByBaseline()
+      Modifier.alignByBaseline()
     }
     Text(
-      modifier = modifier,
+      modifier = textModifier,
       text = value,
       color = color,
       style = style,
@@ -42,3 +45,18 @@ fun RowScope.DataValue(
     )
   }
 }
+
+@Preview
+@Composable
+fun DataValuePreview() {
+  Row {
+    DataValue(
+      value = "Example Value",
+      color = Color.Black,
+      style = MaterialTheme.typography.headlineSmall,
+      clickable = true
+    )
+  }
+}
+
+

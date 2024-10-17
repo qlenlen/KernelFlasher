@@ -9,7 +9,7 @@
     <string name="kernel_name">内核名</string>
     <string name="kernel_version">内核版本</string>
     <string name="slot_suffix">插槽后缀</string>
-    <string name="slot">插槽</string>
+    <string name="slot">内核</string>
     <string name="slot_a">插槽 A</string>
     <string name="slot_b">插槽 B</string>
     <string name="boot_sha1">Boot 哈希</string>

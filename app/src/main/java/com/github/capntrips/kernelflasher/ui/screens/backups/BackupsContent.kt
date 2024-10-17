@@ -18,9 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.github.capntrips.kernelflasher.R
@@ -28,7 +26,6 @@ import com.github.capntrips.kernelflasher.common.PartitionUtil
 import com.github.capntrips.kernelflasher.ui.components.DataCard
 import com.github.capntrips.kernelflasher.ui.components.DataRow
 import com.github.capntrips.kernelflasher.ui.components.DataSet
-import com.github.capntrips.kernelflasher.ui.components.ViewButton
 
 @ExperimentalMaterial3Api
 @Composable
@@ -91,66 +88,6 @@ fun ColumnScope.BackupsContent(
           Text(stringResource(R.string.delete))
         }
       }
-    }
-  } else {
-    DataCard(stringResource(R.string.backups))
-    AnimatedVisibility(viewModel.needsMigration) {
-      Column {
-        Spacer(Modifier.height(5.dp))
-        OutlinedButton(
-          modifier = Modifier
-            .fillMaxWidth(),
-          shape = RoundedCornerShape(4.dp),
-          onClick = { viewModel.migrate(context) }
-        ) {
-          Text(stringResource(R.string.migrate))
-        }
-      }
-    }
-    if (viewModel.backups.isNotEmpty()) {
-      for (id in viewModel.backups.keys.sortedByDescending { it }) {
-        val currentBackup = viewModel.backups[id]!!
-        Spacer(Modifier.height(16.dp))
-        DataCard(
-          title = id,
-          button = {
-            AnimatedVisibility(!viewModel.isRefreshing) {
-              Column {
-                ViewButton(onClick = {
-                  navController.navigate("backups/$id")
-                })
-              }
-            }
-          }
-        ) {
-          val cardWidth = remember { mutableIntStateOf(0) }
-          if (currentBackup.type == "raw") {
-            DataRow(
-              label = stringResource(R.string.boot_sha1),
-              value = currentBackup.bootSha1!!.substring(0, 8),
-              valueStyle = MaterialTheme.typography.titleSmall.copy(
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Medium
-              ),
-              mutableMaxWidth = cardWidth
-            )
-          }
-          DataRow(
-            stringResource(R.string.kernel_version),
-            currentBackup.kernelVersion,
-            mutableMaxWidth = cardWidth,
-            clickable = true
-          )
-        }
-      }
-    } else {
-      Spacer(Modifier.height(32.dp))
-      Text(
-        stringResource(R.string.no_backups_found),
-        modifier = Modifier.fillMaxWidth(),
-        textAlign = TextAlign.Center,
-        fontStyle = FontStyle.Italic
-      )
     }
   }
 }

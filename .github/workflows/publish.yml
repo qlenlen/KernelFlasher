@@ -27,7 +27,7 @@ jobs:
           ./gradlew build
           tree app/build/outputs/apk/release
 
-      - uses: r0adkll/sign-android-release@v1.0.4
+      - uses: qlenlen/sign-android-release@v2.0.1
         name: Sign app APK
         id: sign_app
         with:

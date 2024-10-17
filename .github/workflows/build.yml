@@ -58,13 +58,13 @@ jobs:
           DATE=$(date +'%y.%m.%d')
           echo "TAG=$DATE" >> $GITHUB_ENV
 
-      - name: Upload release
-        uses: ncipollo/release-action@v1.14.0
-        with:
-          allowUpdates: true
-          removeArtifacts: true
-          name: "1.${{ github.run_number }}.0"
-          tag: "v1.${{ github.run_number }}.0"
-          body: |
-            Note: QMod KernelFlasher, support ksu-lkm
-          artifacts: "*.apk"
+#      - name: Upload release
+#        uses: ncipollo/release-action@v1.14.0
+#        with:
+#          allowUpdates: true
+#          removeArtifacts: true
+#          name: "1.${{ github.run_number }}.0"
+#          tag: "v1.${{ github.run_number }}.0"
+#          body: |
+#            Note: QMod KernelFlasher, support ksu-lkm
+#          artifacts: "*.apk"

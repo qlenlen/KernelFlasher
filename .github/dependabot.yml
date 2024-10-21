@@ -1,9 +1,9 @@
 version: 2
 updates:
-  - package-ecosystem: "gradle" # 这里指定使用的包管理工具
-    directory: "/" # 项目根目录
+  - package-ecosystem: "gradle"
+    directory: "/"
     schedule:
-      interval: "daily" # 检查更新的频率
+      interval: "daily"
     commit-message:
-      prefix: "deps" # 提交信息前缀
-    open-pull-requests-limit: 10 # 同时打开的PR数量限制
+      prefix: "deps"
+    open-pull-requests-limit: 10

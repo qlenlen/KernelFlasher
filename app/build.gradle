@@ -14,7 +14,7 @@ android {
         minSdk 33
         targetSdk 35
         versionCode 21
-        versionName "1.0.0-alpha21"
+        versionName "1.0.0-alpha23"
 
         javaCompileOptions {
             annotationProcessorOptions {
@@ -86,6 +86,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.room.runtime)
     implementation libs.androidx.ui.tooling.preview.android
+    implementation libs.androidx.animation.core.android
     annotationProcessor(libs.androidx.room.compiler)
     ksp(libs.androidx.room.compiler)
     implementation(libs.libsu.core)

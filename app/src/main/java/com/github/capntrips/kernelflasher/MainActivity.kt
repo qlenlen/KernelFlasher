@@ -16,6 +16,10 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
@@ -247,7 +251,13 @@ class MainActivity : ComponentActivity() {
               }
 
             }
-          NavHost(navController = navController, startDestination = "main") {
+          NavHost(navController = navController, startDestination = "main",
+            enterTransition = {
+              fadeIn(animationSpec = tween(durationMillis = 400, easing = EaseInOut))
+            },
+            exitTransition = {
+              fadeOut(animationSpec = tween(durationMillis = 400, easing = EaseInOut))
+            }) {
             composable("main") {
               RefreshableScreen(mainViewModel, navController, swipeEnabled = true) {
                 MainContent(mainViewModel, navController)

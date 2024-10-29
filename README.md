@@ -1,3 +1,6 @@
+[![GitHub release](https://img.shields.io/github/release/qlenlen/KernelFlasher)](https://GitHub.com/qlenlen/KernelFlasher/releases/) 
+[![Github all releases](https://img.shields.io/github/downloads/qlenlen/KernelFlasher/total)](https://GitHub.com/qlenlen/KernelFlasher/releases/)
+
 # Kernel Flasher
 
 Kernel Flasher is an Android app to flash, backup, and restore kernels.

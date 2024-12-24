@@ -13,7 +13,7 @@ androidx-room = "2.6.1"
 kotlinx-serialization-json = "1.6.3"
 libsu = "5.2.1"
 material = "1.12.0"
-okhttp = "4.11.0"
+okhttp = "4.12.0"
 
 android-application = "8.3.2"
 devtools-ksp = "2.0.21-1.0.27"

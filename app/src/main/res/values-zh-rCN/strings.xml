@@ -27,6 +27,7 @@
     <string name="backup">备份</string>
     <string name="updates">更新</string>
     <string name="flash">刷入</string>
+    <string name="quick_flash">快捷刷写</string>
     <string name="flash_ak3_zip">刷入 AK3 压缩包</string>
     <string name="flash_partition_image">刷入分区镜像</string>
     <string name="restore">恢复</string>

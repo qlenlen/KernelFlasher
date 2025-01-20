@@ -32,6 +32,7 @@ fun DataRow(
     val labelModifier = if (mutableMaxWidth != null) {
       var maxWidth by mutableMaxWidth
       Modifier
+        .padding(bottom = 6.dp)
         .layout { measurable, constraints ->
           val placeable = measurable.measure(constraints)
           maxWidth = maxOf(maxWidth, placeable.width)

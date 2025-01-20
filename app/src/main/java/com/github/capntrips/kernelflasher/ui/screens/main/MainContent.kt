@@ -69,6 +69,14 @@ fun ColumnScope.MainContent(
     )
   }
   Spacer(Modifier.height(16.dp))
+  OutlinedButton(
+    modifier = Modifier
+      .fillMaxWidth(),
+    shape = RoundedCornerShape(4.dp),
+    onClick = { navController.navigate("slot${viewModel.slotSuffix}") }
+  ) {
+    Text(stringResource(R.string.quick_flash))
+  }
   AnimatedVisibility(!viewModel.isRefreshing) {
     OutlinedButton(
       modifier = Modifier

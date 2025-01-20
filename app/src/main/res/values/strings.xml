@@ -26,6 +26,7 @@
     <string name="backup">Backup</string>
     <string name="updates">Updates</string>
     <string name="flash">Flash</string>
+    <string name="quick_flash">Quick Flash</string>
     <string name="flash_ak3_zip">Flash AK3 Zip</string>
     <string name="flash_partition_image">Flash Partition Image</string>
     <string name="restore">Restore</string>

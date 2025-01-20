@@ -24,7 +24,7 @@ jobs:
       - name: Build with Gradle
         run: |
           chmod +x ./gradlew 
-          ./gradlew build
+          ./gradlew assembleRelease
           tree app/build/outputs/apk/release
 
       - uses: qlenlen/sign-android-release@v2.0.1

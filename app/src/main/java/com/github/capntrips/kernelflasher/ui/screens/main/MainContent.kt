@@ -1,5 +1,6 @@
 package com.github.capntrips.kernelflasher.ui.screens.main
 
+import android.content.Context
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.ColumnScope
@@ -24,6 +25,10 @@ import com.github.capntrips.kernelflasher.ui.components.DataRow
 import com.github.capntrips.kernelflasher.ui.components.SlotCard
 import kotlinx.serialization.ExperimentalSerializationApi
 
+private fun parseSusfsVersion(version: SusStatus, context: Context): String {
+  return context.getString(R.string.susfs_version, version.version, version.mode)
+}
+
 @ExperimentalMaterial3Api
 @ExperimentalSerializationApi
 @Composable
@@ -40,6 +45,15 @@ fun ColumnScope.MainContent(
       mutableMaxWidth = cardWidth
     )
     DataRow(stringResource(R.string.build_number), Build.ID, mutableMaxWidth = cardWidth)
+    DataRow(
+      "SusFS",
+      if (viewModel.susfsVersion.isSupported()) parseSusfsVersion(
+        viewModel.susfsVersion,
+        context
+      ) else context.getString(R.string.unsupported),
+      mutableMaxWidth = cardWidth,
+      clickable = true
+    )
     DataRow(
       stringResource(R.string.kernel_version),
       viewModel.kernelVersion,
@@ -69,14 +83,6 @@ fun ColumnScope.MainContent(
     )
   }
   Spacer(Modifier.height(16.dp))
-  OutlinedButton(
-    modifier = Modifier
-      .fillMaxWidth(),
-    shape = RoundedCornerShape(4.dp),
-    onClick = { navController.navigate("slot${viewModel.slotSuffix}") }
-  ) {
-    Text(stringResource(R.string.quick_flash))
-  }
   AnimatedVisibility(!viewModel.isRefreshing) {
     OutlinedButton(
       modifier = Modifier
@@ -97,21 +103,25 @@ fun ColumnScope.MainContent(
       Text(stringResource(R.string.save_ramoops))
     }
   }
-  OutlinedButton(
-    modifier = Modifier
-      .fillMaxWidth(),
-    shape = RoundedCornerShape(4.dp),
-    onClick = { viewModel.saveDmesg(context) }
-  ) {
-    Text(stringResource(R.string.save_dmesg))
+  AnimatedVisibility(!viewModel.isRefreshing) {
+    OutlinedButton(
+      modifier = Modifier
+        .fillMaxWidth(),
+      shape = RoundedCornerShape(4.dp),
+      onClick = { viewModel.saveDmesg(context) }
+    ) {
+      Text(stringResource(R.string.save_dmesg))
+    }
   }
-  OutlinedButton(
-    modifier = Modifier
-      .fillMaxWidth(),
-    shape = RoundedCornerShape(4.dp),
-    onClick = { viewModel.saveLogcat(context) }
-  ) {
-    Text(stringResource(R.string.save_logcat))
+  AnimatedVisibility(!viewModel.isRefreshing) {
+    OutlinedButton(
+      modifier = Modifier
+        .fillMaxWidth(),
+      shape = RoundedCornerShape(4.dp),
+      onClick = { viewModel.saveLogcat(context) }
+    ) {
+      Text(stringResource(R.string.save_logcat))
+    }
   }
   AnimatedVisibility(!viewModel.isRefreshing) {
     OutlinedButton(

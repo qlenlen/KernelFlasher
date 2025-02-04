@@ -32,16 +32,31 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.github.capntrips.kernelflasher.R
 import com.github.capntrips.kernelflasher.ui.screens.main.MainViewModel
 import kotlinx.serialization.ExperimentalSerializationApi
+
+val colorList: List<Color> = listOf(
+  Color(0xE5E57373),
+  Color(0xE564B5F6),
+  Color(0xE54DB6AC),
+  Color(0xE581C784),
+  Color(0xE5FFD54F),
+  Color(0xE5FF8A65),
+  Color(0xE5A1887F),
+  Color(0xE590A4AE)
+).shuffled()
 
 @ExperimentalMaterialApi
 @ExperimentalMaterial3Api
@@ -90,9 +105,18 @@ fun RefreshableScreen(
             .padding(15.dp)
         ) {
           Text(
-            modifier = Modifier.align(Alignment.Center).padding(bottom = 8.dp),
-            text = "QMod Flasher",
+            modifier = Modifier
+              .align(Alignment.Center)
+              .padding(bottom = 8.dp),
+            text = buildAnnotatedString {
+              withStyle(
+                style = SpanStyle(brush = Brush.linearGradient(colors = colorList))
+              ) {
+                append("Qkernel Flasher")
+              }
+            },
             style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Medium,
             fontSize = 23.5.sp
           )
         }

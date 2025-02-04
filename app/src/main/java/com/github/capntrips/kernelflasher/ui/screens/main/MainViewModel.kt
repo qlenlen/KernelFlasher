@@ -25,6 +25,14 @@ import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+private const val SUSBIN = "/data/adb/ksu/bin/ksu_susfs"
+
+data class SusStatus(val version: String, val mode: String) {
+  fun isSupported(): Boolean {
+    return version.isNotEmpty() && mode.isNotEmpty()
+  }
+}
+
 @ExperimentalSerializationApi
 class MainViewModel(
   context: Context,
@@ -37,6 +45,7 @@ class MainViewModel(
 
   val slotSuffix: String
 
+  val susfsVersion: SusStatus
   val kernelVersion: String
   val isAb: Boolean
   val slotA: SlotViewModel
@@ -57,9 +66,27 @@ class MainViewModel(
   val error: String
     get() = _error!!
 
+
+  private val isSusSupport: Boolean
+    get() = Shell.cmd("[ -f \"/data/adb/ksu/bin/ksu_susfs\" ] && echo 1 || echo 0")
+      .exec().out[0] == "1"
+
+  fun getSusStatus(): SusStatus {
+    if (isSusSupport) {
+      var ver = Shell.cmd("$SUSBIN show version").exec().out[0]
+      if (ver.contains("not supported")) ver = ""
+      var mode = Shell.cmd("$SUSBIN sus_su show_working_mode").exec().out[0]
+      if (mode.contains("not supported")) mode = ""
+      return SusStatus(ver, mode)
+    } else {
+      return SusStatus("", "")
+    }
+  }
+
   init {
     PartitionUtil.init(context, fileSystemManager)
     kernelVersion = Shell.cmd("echo $(uname -r) $(uname -v)").exec().out[0]
+    susfsVersion = getSusStatus()
     slotSuffix = Shell.cmd("getprop ro.boot.slot_suffix").exec().out[0]
     backups = BackupsViewModel(fileSystemManager, navController, _isRefreshing, _backups)
     updates = UpdatesViewModel(context, fileSystemManager, navController, _isRefreshing)

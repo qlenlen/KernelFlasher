@@ -15,6 +15,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.github.capntrips.kernelflasher.R
 import com.github.capntrips.kernelflasher.common.PartitionUtil
 import com.github.capntrips.kernelflasher.common.extensions.ByteArray.toHex
 import com.github.capntrips.kernelflasher.common.extensions.ExtendedFile.inputStream
@@ -27,7 +28,6 @@ import com.topjohnwu.superuser.nio.FileSystemManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
 import java.security.DigestOutputStream
@@ -518,14 +518,14 @@ class SlotViewModel(
             .build().newJob().add("F=$files Z=\"$zip\" /system/bin/sh $flashScript").to(flashOutput)
             .exec()
         if (result.isSuccess) {
-          log(context, "Kernel flashed successfully")
+          log(context, context.getString(R.string.flash_ok))
           _wasFlashSuccess.value = true
         } else {
-          log(context, "Failed to flash zip", shouldThrow = false)
+          log(context, context.getString(R.string.flash_error), shouldThrow = false)
         }
         clearTmp(context)
       } else {
-        log(context, "AK3 zip is missing", shouldThrow = true)
+        log(context, context.getString(R.string.flash_miss), shouldThrow = true)
       }
     } catch (e: Exception) {
       clearFlash(context)

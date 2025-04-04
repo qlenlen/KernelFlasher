@@ -69,15 +69,17 @@ fun ColumnScope.MainContent(
       mutableMaxWidth = cardWidth
     )
     DataRow(stringResource(R.string.build_number), Build.ID, mutableMaxWidth = cardWidth)
-    DataRow(
-      "SusFS",
-      if (viewModel.susfsVersion.isSupported()) parseSusfsVersion(
-        viewModel.susfsVersion,
-        context
-      ) else context.getString(R.string.unsupported),
-      mutableMaxWidth = cardWidth,
-      clickable = true
-    )
+    if (viewModel.susfsVersion.isSupported()) {
+      DataRow(
+        "SusFS",
+        if (viewModel.susfsVersion.isSupported()) parseSusfsVersion(
+          viewModel.susfsVersion,
+          context
+        ) else context.getString(R.string.unsupported),
+        mutableMaxWidth = cardWidth,
+        clickable = true
+      )
+    }
     DataRow(
       stringResource(R.string.kernel_version),
       viewModel.kernelVersion,

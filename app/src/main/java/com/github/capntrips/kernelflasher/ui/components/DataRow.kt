@@ -49,9 +49,9 @@ fun DataRow(
       text = label,
       color = labelColor,
       style = labelStyle,
-      fontSize = 12.sp
+      fontSize = 12.5.sp
     )
-    Spacer(Modifier.width(8.dp))
+    Spacer(Modifier.width(12.dp))
     DataValue(
       value = value,
       color = valueColor,

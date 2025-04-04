@@ -38,6 +38,7 @@ fun RowScope.DataValue(
     }
     Text(
       modifier = textModifier,
+      fontSize = 13.5.sp,
       text = value,
       color = color,
       style = style,

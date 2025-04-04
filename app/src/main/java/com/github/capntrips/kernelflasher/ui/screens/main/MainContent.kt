@@ -3,18 +3,23 @@ package com.github.capntrips.kernelflasher.ui.screens.main
 import android.content.Context
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -27,6 +32,25 @@ import kotlinx.serialization.ExperimentalSerializationApi
 
 private fun parseSusfsVersion(version: SusStatus, context: Context): String {
   return context.getString(R.string.susfs_version, version.version, version.mode)
+}
+
+@Composable
+fun MyOutlinedButton(onclick: () -> Unit, content: @Composable () -> Unit) {
+  OutlinedButton(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(horizontal = 6.dp, vertical = 2.dp),
+    shape = RoundedCornerShape(10.dp),
+    colors = ButtonDefaults.outlinedButtonColors(
+      containerColor = Color.Transparent,
+      contentColor = MaterialTheme.colorScheme.primary
+    ),
+    border = BorderStroke(
+      width = 1.5.dp,
+      color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+    ),
+    onClick = onclick
+  ) { content() }
 }
 
 @ExperimentalMaterial3Api
@@ -84,53 +108,18 @@ fun ColumnScope.MainContent(
   }
   Spacer(Modifier.height(16.dp))
   AnimatedVisibility(!viewModel.isRefreshing) {
-    OutlinedButton(
-      modifier = Modifier
-        .fillMaxWidth(),
-      shape = RoundedCornerShape(4.dp),
-      onClick = { navController.navigate("backups") }
-    ) {
-      Text(stringResource(R.string.backups))
-    }
+    MyOutlinedButton(onclick = { navController.navigate("backups") }) { Text(stringResource(R.string.backups)) }
   }
   if (viewModel.hasRamoops) {
-    OutlinedButton(
-      modifier = Modifier
-        .fillMaxWidth(),
-      shape = RoundedCornerShape(4.dp),
-      onClick = { viewModel.saveRamoops(context) }
-    ) {
-      Text(stringResource(R.string.save_ramoops))
-    }
+    MyOutlinedButton(onclick = { navController.navigate("ramoops") }) { Text(stringResource(R.string.save_ramoops)) }
   }
   AnimatedVisibility(!viewModel.isRefreshing) {
-    OutlinedButton(
-      modifier = Modifier
-        .fillMaxWidth(),
-      shape = RoundedCornerShape(4.dp),
-      onClick = { viewModel.saveDmesg(context) }
-    ) {
-      Text(stringResource(R.string.save_dmesg))
-    }
+    MyOutlinedButton(onclick = { viewModel.saveDmesg(context) }) { Text(stringResource(R.string.save_dmesg)) }
   }
   AnimatedVisibility(!viewModel.isRefreshing) {
-    OutlinedButton(
-      modifier = Modifier
-        .fillMaxWidth(),
-      shape = RoundedCornerShape(4.dp),
-      onClick = { viewModel.saveLogcat(context) }
-    ) {
-      Text(stringResource(R.string.save_logcat))
-    }
+    MyOutlinedButton(onclick = { viewModel.saveLogcat(context) }) { Text(stringResource(R.string.save_logcat)) }
   }
   AnimatedVisibility(!viewModel.isRefreshing) {
-    OutlinedButton(
-      modifier = Modifier
-        .fillMaxWidth(),
-      shape = RoundedCornerShape(4.dp),
-      onClick = { navController.navigate("reboot") }
-    ) {
-      Text(stringResource(R.string.reboot))
-    }
+    MyOutlinedButton(onclick = { navController.navigate("reboot") }) { Text(stringResource(R.string.reboot)) }
   }
 }

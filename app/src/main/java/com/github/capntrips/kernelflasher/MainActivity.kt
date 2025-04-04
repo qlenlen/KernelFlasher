@@ -347,7 +347,7 @@ class MainActivity : ComponentActivity() {
             }
             composable("reboot") {
               RefreshableScreen(mainViewModel, navController) {
-                RebootContent(rebootViewModel, navController)
+                RebootContent(rebootViewModel)
               }
             }
             composable("error/{error}") { backStackEntry ->

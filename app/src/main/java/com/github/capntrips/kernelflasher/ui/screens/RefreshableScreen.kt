@@ -17,18 +17,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,7 +55,7 @@ val colorList: List<Color> = listOf(
   Color(0xE590A4AE)
 ).shuffled()
 
-@ExperimentalMaterialApi
+
 @ExperimentalMaterial3Api
 @ExperimentalSerializationApi
 @Composable
@@ -71,9 +68,7 @@ fun RefreshableScreen(
   val statusBar = WindowInsets.statusBars.only(WindowInsetsSides.Top).asPaddingValues()
   val navigationBars = WindowInsets.navigationBars.asPaddingValues()
   val context = LocalContext.current
-  val state = rememberPullRefreshState(viewModel.isRefreshing, onRefresh = {
-    viewModel.refresh(context)
-  })
+
   Scaffold(
     topBar = {
       Box(
@@ -123,11 +118,12 @@ fun RefreshableScreen(
       }
     }
   ) { paddingValues ->
-    Box(
+    PullToRefreshBox(
+      isRefreshing = viewModel.isRefreshing,
+      onRefresh = { viewModel.refresh(context) },
       modifier = Modifier
         .padding(paddingValues)
-        .pullRefresh(state, swipeEnabled)
-        .fillMaxSize(),
+        .fillMaxSize()
     ) {
       Column(
         modifier = Modifier
@@ -135,14 +131,6 @@ fun RefreshableScreen(
           .fillMaxSize()
           .verticalScroll(rememberScrollState()),
         content = content
-      )
-      PullRefreshIndicator(
-        viewModel.isRefreshing,
-        state = state,
-        modifier = Modifier.align(Alignment.TopCenter),
-        backgroundColor = MaterialTheme.colorScheme.background,
-        contentColor = MaterialTheme.colorScheme.primaryContainer,
-        scale = true
       )
     }
   }

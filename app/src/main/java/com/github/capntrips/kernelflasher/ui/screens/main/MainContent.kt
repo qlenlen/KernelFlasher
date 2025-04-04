@@ -3,23 +3,15 @@ package com.github.capntrips.kernelflasher.ui.screens.main
 import android.content.Context
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -27,6 +19,7 @@ import androidx.navigation.NavController
 import com.github.capntrips.kernelflasher.R
 import com.github.capntrips.kernelflasher.ui.components.DataCard
 import com.github.capntrips.kernelflasher.ui.components.DataRow
+import com.github.capntrips.kernelflasher.ui.components.MyOutlinedButton
 import com.github.capntrips.kernelflasher.ui.components.SlotCard
 import kotlinx.serialization.ExperimentalSerializationApi
 
@@ -34,24 +27,6 @@ private fun parseSusfsVersion(version: SusStatus, context: Context): String {
   return context.getString(R.string.susfs_version, version.version, version.mode)
 }
 
-@Composable
-fun MyOutlinedButton(onclick: () -> Unit, content: @Composable () -> Unit) {
-  OutlinedButton(
-    modifier = Modifier
-      .fillMaxWidth()
-      .padding(horizontal = 6.dp, vertical = 2.dp),
-    shape = RoundedCornerShape(10.dp),
-    colors = ButtonDefaults.outlinedButtonColors(
-      containerColor = Color.Transparent,
-      contentColor = MaterialTheme.colorScheme.primary
-    ),
-    border = BorderStroke(
-      width = 1.5.dp,
-      color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
-    ),
-    onClick = onclick
-  ) { content() }
-}
 
 @ExperimentalMaterial3Api
 @ExperimentalSerializationApi

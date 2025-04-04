@@ -4,12 +4,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
@@ -24,6 +21,7 @@ import com.github.capntrips.kernelflasher.R
 import com.github.capntrips.kernelflasher.common.types.room.updates.DateSerializer
 import com.github.capntrips.kernelflasher.ui.components.DataCard
 import com.github.capntrips.kernelflasher.ui.components.DataRow
+import com.github.capntrips.kernelflasher.ui.components.MyOutlinedButton
 import com.github.capntrips.kernelflasher.ui.components.ViewButton
 import kotlinx.serialization.ExperimentalSerializationApi
 
@@ -77,11 +75,8 @@ fun ColumnScope.UpdatesContent(
   AnimatedVisibility(!viewModel.isRefreshing) {
     Column {
       Spacer(Modifier.height(12.dp))
-      OutlinedButton(
-        modifier = Modifier
-          .fillMaxWidth(),
-        shape = RoundedCornerShape(4.dp),
-        onClick = { navController.navigate("updates/add") }
+      MyOutlinedButton(
+        { navController.navigate("updates/add") }
       ) {
         Text(stringResource(R.string.add))
       }

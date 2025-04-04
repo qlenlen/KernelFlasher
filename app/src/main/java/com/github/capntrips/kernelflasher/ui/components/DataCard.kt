@@ -1,8 +1,6 @@
 package com.github.capntrips.kernelflasher.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -38,29 +36,29 @@ fun DataCard(
       containerColor = MaterialTheme.colorScheme.surfaceContainer
     )
   ) {
-      Column(
-        modifier = Modifier.padding(16.dp)
+    Column(
+      modifier = Modifier.padding(16.dp)
+    ) {
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
       ) {
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Text(
-            text = title,
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.ExtraBold
-          )
-          if (button != null) {
-            button()
-          }
-        }
-
-        if (content != null) {
-          Spacer(Modifier.height(14.dp))
-          content()
+        Text(
+          text = title,
+          color = MaterialTheme.colorScheme.onPrimaryContainer,
+          style = MaterialTheme.typography.titleLarge,
+          fontWeight = FontWeight.ExtraBold
+        )
+        if (button != null) {
+          button()
         }
       }
+
+      if (content != null) {
+        Spacer(Modifier.height(14.dp))
+        content()
+      }
+    }
   }
 }

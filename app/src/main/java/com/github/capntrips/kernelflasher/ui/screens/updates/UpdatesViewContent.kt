@@ -4,12 +4,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
@@ -24,6 +21,7 @@ import com.github.capntrips.kernelflasher.R
 import com.github.capntrips.kernelflasher.common.types.room.updates.DateSerializer
 import com.github.capntrips.kernelflasher.ui.components.DataCard
 import com.github.capntrips.kernelflasher.ui.components.DataRow
+import com.github.capntrips.kernelflasher.ui.components.MyOutlinedButton
 import kotlinx.serialization.ExperimentalSerializationApi
 
 @ExperimentalMaterial3Api
@@ -64,36 +62,24 @@ fun ColumnScope.UpdatesViewContent(
     AnimatedVisibility(!viewModel.isRefreshing) {
       Column {
         Spacer(Modifier.height(5.dp))
-        OutlinedButton(
-          modifier = Modifier
-            .fillMaxWidth(),
-          shape = RoundedCornerShape(4.dp),
-          onClick = { viewModel.downloadChangelog { navController.navigate("updates/view/${currentUpdate.id}/changelog") } }
+        MyOutlinedButton(
+          { viewModel.downloadChangelog { navController.navigate("updates/view/${currentUpdate.id}/changelog") } }
         ) {
           Text(stringResource(R.string.changelog))
         }
         // TODO: add download progress indicator
-        OutlinedButton(
-          modifier = Modifier
-            .fillMaxWidth(),
-          shape = RoundedCornerShape(4.dp),
-          onClick = { viewModel.downloadKernel(context) }
+        MyOutlinedButton(
+          { viewModel.downloadKernel(context) }
         ) {
           Text(stringResource(R.string.download))
         }
-        OutlinedButton(
-          modifier = Modifier
-            .fillMaxWidth(),
-          shape = RoundedCornerShape(4.dp),
-          onClick = { viewModel.update() }
+        MyOutlinedButton(
+          { viewModel.update() }
         ) {
           Text(stringResource(R.string.check_for_updates))
         }
-        OutlinedButton(
-          modifier = Modifier
-            .fillMaxWidth(),
-          shape = RoundedCornerShape(4.dp),
-          onClick = { viewModel.delete { navController.popBackStack() } }
+        MyOutlinedButton(
+          { viewModel.delete { navController.popBackStack() } }
         ) {
           Text(stringResource(R.string.delete))
         }

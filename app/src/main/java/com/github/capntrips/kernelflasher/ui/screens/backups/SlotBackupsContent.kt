@@ -1,6 +1,7 @@
 package com.github.capntrips.kernelflasher.ui.screens.backups
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -37,6 +38,7 @@ import com.github.capntrips.kernelflasher.ui.components.DataCard
 import com.github.capntrips.kernelflasher.ui.components.DataRow
 import com.github.capntrips.kernelflasher.ui.components.DataSet
 import com.github.capntrips.kernelflasher.ui.components.FlashList
+import com.github.capntrips.kernelflasher.ui.components.MyOutlinedButton
 import com.github.capntrips.kernelflasher.ui.components.SlotCard
 import com.github.capntrips.kernelflasher.ui.components.ViewButton
 import com.github.capntrips.kernelflasher.ui.screens.slot.SlotViewModel
@@ -114,22 +116,16 @@ fun ColumnScope.SlotBackupsContent(
           Spacer(Modifier.height(5.dp))
           if (slotViewModel.isActive) {
             if (currentBackup.type == "raw") {
-              OutlinedButton(
-                modifier = Modifier
-                  .fillMaxWidth(),
-                shape = RoundedCornerShape(4.dp),
-                onClick = {
+              MyOutlinedButton(
+                {
                   navController.navigate("slot$slotSuffix/backups/${backupsViewModel.currentBackup!!}/restore")
                 }
               ) {
                 Text(stringResource(R.string.restore))
               }
             } else if (currentBackup.type == "ak3") {
-              OutlinedButton(
-                modifier = Modifier
-                  .fillMaxWidth(),
-                shape = RoundedCornerShape(4.dp),
-                onClick = {
+              MyOutlinedButton(
+                {
                   slotViewModel.flashAk3(
                     context,
                     backupsViewModel.currentBackup!!,
@@ -144,11 +140,8 @@ fun ColumnScope.SlotBackupsContent(
               }
             }
           }
-          OutlinedButton(
-            modifier = Modifier
-              .fillMaxWidth(),
-            shape = RoundedCornerShape(4.dp),
-            onClick = { backupsViewModel.delete(context) { navController.popBackStack() } }
+          MyOutlinedButton(
+            { backupsViewModel.delete(context) { navController.popBackStack() } }
           ) {
             Text(stringResource(R.string.delete))
           }
@@ -204,8 +197,15 @@ fun ColumnScope.SlotBackupsContent(
             modifier = Modifier
               .fillMaxWidth()
               .alpha(if (backupsViewModel.backupPartitions[partitionName] == true) 1.0f else 0.5f),
-            shape = RoundedCornerShape(4.dp),
-            colors = if (backupsViewModel.backupPartitions[partitionName] == true) ButtonDefaults.outlinedButtonColors() else disabledColor,
+            shape = RoundedCornerShape(10.dp),
+            border = BorderStroke(
+              width = 1.5.dp,
+              color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+            ),
+            colors = if (backupsViewModel.backupPartitions[partitionName] == true) ButtonDefaults.outlinedButtonColors(
+              containerColor = Color.Transparent,
+              contentColor = MaterialTheme.colorScheme.primary
+            ) else disabledColor,
             enabled = backupsViewModel.backupPartitions[partitionName] != null,
             onClick = {
               backupsViewModel.backupPartitions[partitionName] =

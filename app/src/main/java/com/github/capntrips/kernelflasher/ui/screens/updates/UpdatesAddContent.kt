@@ -4,9 +4,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.github.capntrips.kernelflasher.R
+import com.github.capntrips.kernelflasher.ui.components.MyOutlinedButton
 import kotlinx.serialization.ExperimentalSerializationApi
 
 @Suppress("UnusedReceiverParameter")
@@ -40,11 +39,8 @@ fun ColumnScope.UpdatesAddContent(
       .fillMaxWidth()
   )
   Spacer(Modifier.height(5.dp))
-  OutlinedButton(
-    modifier = Modifier
-      .fillMaxWidth(),
-    shape = RoundedCornerShape(4.dp),
-    onClick = { viewModel.add(url) { navController.navigate("updates/view/$it") { popUpTo("updates") } } }
+  MyOutlinedButton(
+    { viewModel.add(url) { navController.navigate("updates/view/$it") { popUpTo("updates") } } }
   ) {
     Text(stringResource(R.string.add))
   }

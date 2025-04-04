@@ -1,74 +1,49 @@
 package com.github.capntrips.kernelflasher.ui.screens.reboot
 
-import android.os.Build
 import android.os.PowerManager
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.github.capntrips.kernelflasher.R
+import com.github.capntrips.kernelflasher.ui.components.MyOutlinedButton
 
 @Suppress("UnusedReceiverParameter")
 @Composable
 fun ColumnScope.RebootContent(
-  viewModel: RebootViewModel,
-  @Suppress("UNUSED_PARAMETER") ignoredNavController: NavController
+  viewModel: RebootViewModel
 ) {
   val context = LocalContext.current
-  OutlinedButton(
-    modifier = Modifier
-      .fillMaxWidth(),
-    shape = RoundedCornerShape(4.dp),
-    onClick = { viewModel.rebootSystem() }
+  MyOutlinedButton(
+    { viewModel.rebootSystem() }
   ) {
     Text(stringResource(R.string.reboot))
   }
-  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && context.getSystemService(PowerManager::class.java)?.isRebootingUserspaceSupported == true) {
-    OutlinedButton(
-      modifier = Modifier
-        .fillMaxWidth(),
-      shape = RoundedCornerShape(4.dp),
-      onClick = { viewModel.rebootUserspace() }
+  if (context.getSystemService(PowerManager::class.java)?.isRebootingUserspaceSupported == true) {
+    MyOutlinedButton(
+      { viewModel.rebootUserspace() }
     ) {
       Text(stringResource(R.string.reboot_userspace))
     }
   }
-  OutlinedButton(
-    modifier = Modifier
-      .fillMaxWidth(),
-    shape = RoundedCornerShape(4.dp),
-    onClick = { viewModel.rebootRecovery() }
+  MyOutlinedButton(
+    { viewModel.rebootRecovery() }
   ) {
     Text(stringResource(R.string.reboot_recovery))
   }
-  OutlinedButton(
-    modifier = Modifier
-      .fillMaxWidth(),
-    shape = RoundedCornerShape(4.dp),
-    onClick = { viewModel.rebootBootloader() }
+  MyOutlinedButton(
+    { viewModel.rebootBootloader() }
   ) {
     Text(stringResource(R.string.reboot_bootloader))
   }
-  OutlinedButton(
-    modifier = Modifier
-      .fillMaxWidth(),
-    shape = RoundedCornerShape(4.dp),
-    onClick = { viewModel.rebootDownload() }
+  MyOutlinedButton(
+    { viewModel.rebootDownload() }
   ) {
     Text(stringResource(R.string.reboot_download))
   }
-  OutlinedButton(
-    modifier = Modifier
-      .fillMaxWidth(),
-    shape = RoundedCornerShape(4.dp),
-    onClick = { viewModel.rebootEdl() }
+  MyOutlinedButton(
+    { viewModel.rebootEdl() }
   ) {
     Text(stringResource(R.string.reboot_edl))
   }

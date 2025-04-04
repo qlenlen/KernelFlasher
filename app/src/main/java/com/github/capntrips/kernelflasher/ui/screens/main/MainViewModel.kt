@@ -162,20 +162,17 @@ class MainViewModel(
 
   private fun launch(block: suspend () -> Unit) {
     viewModelScope.launch(Dispatchers.IO) {
-      viewModelScope.launch(Dispatchers.Main) {
-        _isRefreshing.value = true
-      }
+      _isRefreshing.value = true
       try {
-        block()
-      } catch (e: Exception) {
-        withContext(Dispatchers.Main) {
-          Log.e(TAG, e.message, e)
-          navController.navigate("error/${e.message}") {
-            popUpTo("main")
-          }
+        withContext(Dispatchers.IO) {
+          block()
         }
-      }
-      viewModelScope.launch(Dispatchers.Main) {
+      } catch (e: Exception) {
+        Log.e(TAG, e.message, e)
+        navController.navigate("error/${e.message}") {
+          popUpTo("main")
+        }
+      } finally {
         _isRefreshing.value = false
       }
     }

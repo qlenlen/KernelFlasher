@@ -2,6 +2,7 @@ package com.github.capntrips.kernelflasher.ui.screens.slot
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -32,6 +33,7 @@ import com.github.capntrips.kernelflasher.common.PartitionUtil
 import com.github.capntrips.kernelflasher.ui.components.DataCard
 import com.github.capntrips.kernelflasher.ui.components.FlashButton
 import com.github.capntrips.kernelflasher.ui.components.FlashList
+import com.github.capntrips.kernelflasher.ui.components.MyOutlinedButton
 import com.github.capntrips.kernelflasher.ui.components.SlotCard
 import kotlinx.serialization.ExperimentalSerializationApi
 
@@ -70,11 +72,8 @@ fun ColumnScope.SlotFlashContent(
         }
         viewModel.flashAk3(context, uri)
       })
-      OutlinedButton(
-        modifier = Modifier
-          .fillMaxWidth(),
-        shape = RoundedCornerShape(4.dp),
-        onClick = {
+      MyOutlinedButton(
+        {
           navController.navigate("slot$slotSuffix/flash/image")
         }
       ) {
@@ -103,8 +102,15 @@ fun ColumnScope.SlotFlashContent(
           modifier = Modifier
             .fillMaxWidth()
             .alpha(if (viewModel.backupPartitions[partitionName] == true) 1.0f else 0.5f),
-          shape = RoundedCornerShape(4.dp),
-          colors = if (viewModel.backupPartitions[partitionName]!!) ButtonDefaults.outlinedButtonColors() else disabledColor,
+          shape = RoundedCornerShape(10.dp),
+          border = BorderStroke(
+            width = 1.5.dp,
+            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+          ),
+          colors = if (viewModel.backupPartitions[partitionName]!!) ButtonDefaults.outlinedButtonColors(
+            containerColor = Color.Transparent,
+            contentColor = MaterialTheme.colorScheme.primary
+          ) else disabledColor,
           onClick = {
             viewModel.backupPartitions[partitionName] = !viewModel.backupPartitions[partitionName]!!
           },
@@ -120,11 +126,8 @@ fun ColumnScope.SlotFlashContent(
           }
         }
       }
-      OutlinedButton(
-        modifier = Modifier
-          .fillMaxWidth(),
-        shape = RoundedCornerShape(4.dp),
-        onClick = {
+      MyOutlinedButton(
+        {
           viewModel.backup(context)
           navController.navigate("slot$slotSuffix/backup/backup") {
             popUpTo("slot$slotSuffix")

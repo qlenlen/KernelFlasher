@@ -3,6 +3,7 @@ package com.github.capntrips.kernelflasher.ui.screens
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -97,23 +98,36 @@ fun RefreshableScreen(
         Box(
           Modifier
             .fillMaxWidth()
-            .padding(15.dp)
+            .padding(vertical = 14.dp, horizontal = 2.dp)
         ) {
-          Text(
-            modifier = Modifier
-              .align(Alignment.Center)
-              .padding(bottom = 8.dp),
-            text = buildAnnotatedString {
-              withStyle(
-                style = SpanStyle(brush = Brush.linearGradient(colors = colorList))
-              ) {
-                append("Qkernel Flasher")
-              }
-            },
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Medium,
-            fontSize = 23.5.sp
-          )
+          if (isSystemInDarkTheme()) {
+            Text(
+              modifier = Modifier
+                .align(Alignment.Center)
+                .padding(bottom = 8.dp),
+              text = buildAnnotatedString {
+                withStyle(
+                  style = SpanStyle(brush = Brush.linearGradient(colors = colorList))
+                ) {
+                  append("Qkernel Flasher")
+                }
+              },
+              style = MaterialTheme.typography.headlineMedium,
+              fontWeight = FontWeight.Medium,
+              fontSize = 23.5.sp
+            )
+          } else {
+            Text(
+              modifier = Modifier
+                .align(Alignment.Center)
+                .padding(bottom = 8.dp),
+              text = "Qkernel Flasher",
+              style = MaterialTheme.typography.headlineMedium,
+              fontWeight = FontWeight.Medium,
+              color = MaterialTheme.colorScheme.onSurface,
+              fontSize = 23.5.sp
+            )
+          }
         }
       }
     }

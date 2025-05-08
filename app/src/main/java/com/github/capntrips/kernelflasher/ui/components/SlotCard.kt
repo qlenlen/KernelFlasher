@@ -39,7 +39,7 @@ fun SlotCard(
     if (!viewModel.hasError) {
       DataRow(
         label = stringResource(R.string.boot_sha1),
-        value = viewModel.sha1.substring(0, 8),
+        value = if (viewModel.sha1.length > 12) viewModel.sha1.substring(0, 8) else viewModel.sha1,
         valueStyle = MaterialTheme.typography.titleSmall.copy(
           fontFamily = FontFamily.Monospace,
           fontWeight = FontWeight.Medium
@@ -78,7 +78,7 @@ fun SlotCard(
         DataValue(
           value = viewModel.error,
           color = MaterialTheme.colorScheme.error,
-          style = MaterialTheme.typography.titleSmall,
+          style = MaterialTheme.typography.titleMedium,
           clickable = true
         )
       }

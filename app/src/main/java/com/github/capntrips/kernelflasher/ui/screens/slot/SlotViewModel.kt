@@ -3,6 +3,7 @@ package com.github.capntrips.kernelflasher.ui.screens.slot
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.provider.OpenableColumns
 import android.util.Log
 import android.widget.Toast
@@ -94,7 +95,6 @@ class SlotViewModel(
     }
 
     val magiskboot = File(context.filesDir, "magiskboot")
-    Shell.cmd("$magiskboot unpack $boot").exec()
     if (initBoot != null) {
       Shell.cmd("$magiskboot unpack $initBoot").exec()
     }
@@ -126,7 +126,11 @@ class SlotViewModel(
     } else if (kernel.exists()) {
       _sha1 = Shell.cmd("$magiskboot sha1 $boot").exec().out.firstOrNull()
     } else {
-      log(context, "Invalid boot.img, no ramdisk or kernel found", shouldThrow = true)
+      if (Build.MANUFACTURER == "samsung" && !kernel.exists()) {
+        _sha1 = "vab,none"
+      } else {
+        log(context, "Invalid boot.img, no ramdisk or kernel found", shouldThrow = true)
+      }
     }
     Shell.cmd("$magiskboot cleanup").exec()
 

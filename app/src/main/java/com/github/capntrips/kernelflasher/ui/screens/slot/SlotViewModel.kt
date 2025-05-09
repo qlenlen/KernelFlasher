@@ -95,6 +95,8 @@ class SlotViewModel(
     }
 
     val magiskboot = File(context.filesDir, "magiskboot")
+    Shell.cmd("$magiskboot unpack $boot"
+).exec()
     if (initBoot != null) {
       Shell.cmd("$magiskboot unpack $initBoot").exec()
     }

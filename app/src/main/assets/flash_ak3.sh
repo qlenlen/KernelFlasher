@@ -1,8 +1,8 @@
 #!/system/bin/sh
 
 ## setup for testing:
-unzip -p $Z tools*/busybox > $F/busybox;
-unzip -p $Z META-INF/com/google/android/update-binary > $F/update-binary;
+unzip -p "$Z" tools*/busybox > $F/busybox;
+unzip -p "$Z" META-INF/com/google/android/update-binary > $F/update-binary;
 ##
 
 chmod 755 $F/busybox;

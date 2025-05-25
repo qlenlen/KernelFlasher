@@ -175,6 +175,7 @@ class MainActivity : ComponentActivity() {
       copyNativeBinary("httools_static") // v3.2.0
       copyNativeBinary("magiskboot") // v29.0
       copyAsset("flash_ak3.sh")
+      copyAsset("ksuinit")
     } catch (e: Exception) {
       Log.e(TAG, e.message, e)
       setContent {

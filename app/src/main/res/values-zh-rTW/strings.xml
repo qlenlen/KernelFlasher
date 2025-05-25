@@ -29,6 +29,7 @@
     <string name="flash">刷入</string>
     <string name="flash_ak3_zip">刷入 AK3 壓縮包</string>
     <string name="flash_partition_image">刷入分割槽映象</string>
+    <string name="flash_ksu_lkm">" KernelSU LKM Driver"</string>
     <string name="restore">還原</string>
     <string name="check_kernel_version">檢查核心版本</string>
     <string name="mount_vendor_dlkm">掛載 Vendor DLKM</string>

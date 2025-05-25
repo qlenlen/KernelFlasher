@@ -2,6 +2,8 @@ package com.github.capntrips.kernelflasher.ui.components
 
 import android.net.Uri
 import androidx.activity.compose.LocalActivity
+import android.provider.OpenableColumns
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -22,8 +24,9 @@ import kotlinx.serialization.ExperimentalSerializationApi
 @ExperimentalUnitApi
 @Composable
 fun FlashButton(
-  buttonText: String,
-  callback: (uri: Uri) -> Unit
+    buttonText: String,
+    validExtension: String,
+    callback: (uri: Uri) -> Unit
 ) {
   val mainActivity = LocalActivity.current as MainActivity
   val result = remember { mutableStateOf<Uri?>(null) }
@@ -41,9 +44,27 @@ fun FlashButton(
   ) {
     Text(buttonText)
   }
-  result.value?.let { uri ->
-    if (mainActivity.isAwaitingResult) {
-      callback.invoke(uri)
+    result.value?.let {uri ->
+        if (mainActivity.isAwaitingResult) {
+            val contentResolver = mainActivity.contentResolver
+            val fileName = contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (nameIndex != -1 && cursor.moveToFirst()) {
+                    cursor.getString(nameIndex)
+                } else {
+                    null
+                }
+            }
+
+            if (fileName != null && fileName.endsWith(validExtension, ignoreCase = true)) {
+                callback.invoke(uri)
+            }
+            else {
+                // Invalid file extension, show an error message or handle it
+                Toast.makeText(mainActivity.applicationContext, "Invalid file selected!", Toast.LENGTH_LONG).show()
+            }
+        }
+        mainActivity.isAwaitingResult = false
     }
     mainActivity.isAwaitingResult = false
   }

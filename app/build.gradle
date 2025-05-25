@@ -13,8 +13,8 @@ android {
         applicationId "com.github.capntrips.kernelflasher"
         minSdk 33
         targetSdk 35
-        versionCode 26
-        versionName "1.0.0-alpha27"
+        versionCode 28
+        versionName "1.0.0-alpha28"
 
         javaCompileOptions {
             annotationProcessorOptions {

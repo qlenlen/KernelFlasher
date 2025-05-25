@@ -26,6 +26,7 @@ import com.topjohnwu.superuser.nio.ExtendedFile
 import com.topjohnwu.superuser.nio.FileSystemManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -76,6 +77,8 @@ class SlotViewModel(
   private var inInit = true
   private var _error: String? = null
   private val _showCautionDialog: MutableState<Boolean> = mutableStateOf(false)
+  private var cachedKernelVersion: String? = null
+  val magiskboot by lazy { File(context.filesDir, "magiskboot") }
 
   val sha1: String?
     get() = _sha1
@@ -100,7 +103,9 @@ class SlotViewModel(
     get() = _bootInfo.value
 
   init {
-    refresh(context)
+    runBlocking {
+      refresh(context)
+    }
   }
 
   private fun extractKernelValues(input: String, key: String): String? {
@@ -108,7 +113,7 @@ class SlotViewModel(
     return regex.find(input)?.groupValues?.get(1)
   }
 
-  fun refresh(context: Context) {
+  private fun resetInfo() {
     _error = null
     _sha1 = null
     _bootInfo.value = _bootInfo.value.copy(
@@ -118,16 +123,23 @@ class SlotViewModel(
       initBootFmt = null,
       ramdiskLocation = null
     )
+  }
+
+  suspend fun refresh(context: Context) {
+    resetInfo()
 
     if (!isActive) {
       inInit = true
     }
 
-    val magiskboot = File(context.filesDir, "magiskboot")
-    Shell.cmd("$magiskboot cleanup").exec()
+    withContext(Dispatchers.IO) {
+      Shell.cmd("$magiskboot cleanup").exec()
+    }
 
     val unpackBootOutput = mutableListOf<String>()
-    Shell.cmd("$magiskboot unpack $boot").to(unpackBootOutput, unpackBootOutput).exec()
+    withContext(Dispatchers.IO) {
+      Shell.cmd("$magiskboot unpack $boot").to(unpackBootOutput, unpackBootOutput).exec()
+    }
     val bootUnpackOp = unpackBootOutput.joinToString("\n")
 
     _bootInfo.value.headerVersion = extractKernelValues(bootUnpackOp.trimIndent(), HEADER_VER)
@@ -139,14 +151,16 @@ class SlotViewModel(
     Log.d(TAG, _bootInfo.value.toString())
     if (initBoot != null && _bootInfo.value.initBootFmt == null) {
       val unpackInitBootOutput = mutableListOf<String>()
-      if (Shell.cmd("$magiskboot unpack $initBoot").to(unpackInitBootOutput, unpackInitBootOutput)
-          .exec().isSuccess
-      ) {
-        val initBootUnpackOp = unpackInitBootOutput.joinToString("\n")
-        _bootInfo.value.initBootFmt =
-          extractKernelValues(initBootUnpackOp.trimIndent(), RAMDISK_FMT)
-        _bootInfo.value.ramdiskLocation = "init_boot.img"
-      }
+
+      Shell.cmd("$magiskboot unpack $initBoot").to(unpackInitBootOutput, unpackInitBootOutput)
+        .submit {
+          if (it.isSuccess) {
+            val initBootUnpackOp = unpackInitBootOutput.joinToString("\n")
+            _bootInfo.value.initBootFmt =
+              extractKernelValues(initBootUnpackOp.trimIndent(), RAMDISK_FMT)
+            _bootInfo.value.ramdiskLocation = "init_boot.img"
+          }
+        }
     }
 
     val ramdisk = File(context.filesDir, "ramdisk.cpio")
@@ -174,7 +188,7 @@ class SlotViewModel(
         else -> _error = "Invalid ramdisk in boot.img"
       }
     } else if (kernel.exists()) {
-      _sha1 = Shell.cmd("$magiskboot sha1 $boot").exec().out.firstOrNull()
+      _sha1 = getBootSha1()
       if (_bootInfo.value.headerVersion.equals("4") && _bootInfo.value.ramdiskLocation.equals(null)) {
         _bootInfo.value.ramdiskLocation = "boot.img"
         _bootInfo.value.initBootFmt = "lz4_legacy"
@@ -186,7 +200,7 @@ class SlotViewModel(
       }
       _error = "Unable to generate SHA1 hash. Invalid boot.img or magiskboot unpack failed!"
     }
-    Shell.cmd("$magiskboot cleanup").exec()
+    Shell.cmd("$magiskboot cleanup").submit()
 
     PartitionUtil.AvailablePartitions.forEach { partitionName ->
       _backupPartitions[partitionName] = true
@@ -196,18 +210,24 @@ class SlotViewModel(
     inInit = false
   }
 
+  private suspend fun getBootSha1(): String? {
+    return withContext(Dispatchers.IO) {
+      Shell.cmd("$magiskboot sha1 $boot").exec().out.firstOrNull()
+    }
+  }
+
   // TODO: use base class for common functions
   private fun launch(block: suspend () -> Unit) {
-    viewModelScope.launch(Dispatchers.IO) {
+    viewModelScope.launch {
       _isRefreshing.value = true
       try {
-        block()
+        withContext(Dispatchers.IO) {
+          block()
+        }
       } catch (e: Exception) {
-        withContext(Dispatchers.Main) {
-          Log.e(TAG, e.message, e)
-          navController.navigate("error/${e.message}") {
-            popUpTo("main")
-          }
+        Log.e(TAG, e.message, e)
+        navController.navigate("error/${e.message}") {
+          popUpTo("main")
         }
       }
       _isRefreshing.value = false
@@ -322,8 +342,11 @@ class SlotViewModel(
   }
 
   fun getKernel(context: Context) {
+    if (cachedKernelVersion != null) return
+
     launch {
       _getKernel(context)
+      cachedKernelVersion = _bootInfo.value.kernelVersion
     }
   }
 

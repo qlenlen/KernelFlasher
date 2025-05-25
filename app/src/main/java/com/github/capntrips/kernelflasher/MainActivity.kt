@@ -4,14 +4,16 @@ import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
 import android.app.Activity
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.content.res.AssetManager
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
 import android.view.View
 import android.view.ViewTreeObserver
-import android.view.animation.AccelerateInterpolator
+import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -38,6 +40,7 @@ import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.NavHost
@@ -60,6 +63,11 @@ import com.github.capntrips.kernelflasher.ui.theme.KernelFlasherTheme
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ipc.RootService
 import com.topjohnwu.superuser.nio.FileSystemManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import java.io.File
 import kotlin.system.exitProcess
@@ -102,27 +110,54 @@ class MainActivity : ComponentActivity() {
     }
   }
 
-  private fun copyAsset(filename: String) {
-    val dest = File(filesDir, filename)
-    assets.open(filename).use { inputStream ->
-      dest.outputStream().use { outputStream ->
-        inputStream.copyTo(outputStream)
+  suspend fun copyAsset(filename: String, filesDir: File, assets: AssetManager) =
+    withContext(Dispatchers.IO) {
+      val dest = File(filesDir, filename)
+      try {
+        assets.open(filename).use { inputStream ->
+          dest.outputStream().use { outputStream ->
+            inputStream.copyTo(outputStream)
+          }
+        }
+        Shell.cmd("chmod +x $dest").exec()
+      } catch (e: Exception) {
+        Log.e("AssetCopy", "Failed to copy asset: $filename", e)
       }
     }
-    Shell.cmd("chmod +x $dest").exec()
-  }
 
-  private fun copyNativeBinary(filename: String) {
-    val binary = File(applicationInfo.nativeLibraryDir, "lib$filename.so")
-    println("binary: $binary")
-    val dest = File(filesDir, filename)
-    println("dest: $dest")
-    binary.inputStream().use { inputStream ->
-      dest.outputStream().use { outputStream ->
-        inputStream.copyTo(outputStream)
+  suspend fun copyNativeBinary(filename: String, filesDir: File, nativeLibDir: File) =
+    withContext(Dispatchers.IO) {
+      val binary = File(nativeLibDir, "lib$filename.so")
+      val dest = File(filesDir, filename)
+      if (dest.exists() && dest.length() == binary.length()) return@withContext
+      try {
+        binary.inputStream().use { inputStream ->
+          dest.outputStream().use { outputStream ->
+            inputStream.copyTo(outputStream)
+          }
+        }
+        Shell.cmd("chmod +x $dest").exec()
+      } catch (e: Exception) {
+        Log.e("BinaryCopy", "Failed to copy binary: $filename", e)
       }
     }
-    Shell.cmd("chmod +x $dest").exec()
+
+  suspend fun copyAssetsAndBinaries(
+    context: Context
+  ) = withContext(Dispatchers.IO) {
+    val filesDir = context.filesDir
+    val assets = context.assets
+    val nativeLibDir = File(context.applicationInfo.nativeLibraryDir)
+
+    listOf(
+      async { copyNativeBinary("lptools_static", filesDir, nativeLibDir) },
+      async { copyNativeBinary("httools_static", filesDir, nativeLibDir) },
+      async { copyNativeBinary("magiskboot", filesDir, nativeLibDir) },
+      async { copyAsset("mkbootfs", filesDir, assets) },
+      async { copyAsset("ksuinit", filesDir, assets) },
+      async { copyAsset("flash_ak3.sh", filesDir, assets) },
+      async { copyAsset("flash_ak3_mkbootfs.sh", filesDir, assets) }
+    ).joinAll()
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -133,19 +168,12 @@ class MainActivity : ComponentActivity() {
     splashScreen.setOnExitAnimationListener { splashScreenView ->
       val scale = ObjectAnimator.ofPropertyValuesHolder(
         splashScreenView.view,
-        PropertyValuesHolder.ofFloat(
-          View.SCALE_X,
-          1f,
-          0f
-        ),
-        PropertyValuesHolder.ofFloat(
-          View.SCALE_Y,
-          1f,
-          0f
-        )
+        PropertyValuesHolder.ofFloat(View.ALPHA, 1f, 0f),
+        PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 0.9f),
+        PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 0.9f)
       )
-      scale.interpolator = AccelerateInterpolator()
-      scale.duration = 250L
+      scale.interpolator = AccelerateDecelerateInterpolator()
+      scale.duration = 300L
       scale.doOnEnd { splashScreenView.remove() }
       scale.start()
     }
@@ -180,13 +208,9 @@ class MainActivity : ComponentActivity() {
   fun onAidlConnected(fileSystemManager: FileSystemManager) {
     try {
       Shell.cmd("cd $filesDir").exec()
-      copyNativeBinary("lptools_static") // v20220825
-      copyNativeBinary("httools_static") // v3.2.0
-      copyNativeBinary("magiskboot") // v29.0
-      copyAsset("mkbootfs")
-      copyAsset("ksuinit")
-      copyAsset("flash_ak3.sh")
-      copyAsset("flash_ak3_mkbootfs.sh")
+      lifecycleScope.launch {
+        copyAssetsAndBinaries(applicationContext)
+      }
     } catch (e: Exception) {
       Log.e(TAG, e.message, e)
       setContent {

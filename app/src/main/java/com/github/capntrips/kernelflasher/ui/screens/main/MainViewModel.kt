@@ -25,14 +25,6 @@ import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-private const val SUSBIN = "/data/adb/ksu/bin/ksu_susfs"
-
-data class SusStatus(val version: String, val mode: String) {
-  fun isSupported(): Boolean {
-    return version.isNotEmpty() && mode.isNotEmpty()
-  }
-}
-
 @ExperimentalSerializationApi
 class MainViewModel(
   context: Context,
@@ -45,8 +37,8 @@ class MainViewModel(
 
   val slotSuffix: String
 
-  val susfsVersion: SusStatus
   val kernelVersion: String
+  val susfsVersion: String
   val isAb: Boolean
   val slotA: SlotViewModel
   val slotB: SlotViewModel?
@@ -66,29 +58,20 @@ class MainViewModel(
   val error: String
     get() = _error!!
 
-
-  private val isSusSupport: Boolean
-    get() = Shell.cmd("[ -f \"/data/adb/ksu/bin/ksu_susfs\" ] && echo 1 || echo 0")
-      .exec().out[0] == "1"
-
-  fun getSusStatus(): SusStatus {
-    if (isSusSupport) {
-      var ver = Shell.cmd("$SUSBIN show version").exec().out[0]
-      if (ver.contains("not supported")) ver = ""
-      var mode = Shell.cmd("$SUSBIN sus_su show_working_mode").exec().out[0]
-      if (mode.contains("not supported")) mode = ""
-      return SusStatus(ver, mode)
-    } else {
-      return SusStatus("", "")
-    }
-  }
+  data class UpdateDialogData(
+    val title: String,
+    val changelog: List<String>,
+    val onConfirm: () -> Unit
+  )
 
   init {
     PartitionUtil.init(context, fileSystemManager)
     kernelVersion = Shell.cmd("echo $(uname -r) $(uname -v)").exec().out[0]
-    susfsVersion = getSusStatus()
+    susfsVersion = runCatching { Shell.cmd("susfsd version").exec().out[0] }
+      .recoverCatching { Shell.cmd("ksu_susfs show version").exec().out[0] }
+      .getOrDefault("v0.0.0")
     slotSuffix = Shell.cmd("getprop ro.boot.slot_suffix").exec().out[0]
-    backups = BackupsViewModel(fileSystemManager, navController, _isRefreshing, _backups)
+    backups = BackupsViewModel(context, fileSystemManager, navController, _isRefreshing, _backups)
     updates = UpdatesViewModel(context, fileSystemManager, navController, _isRefreshing)
     reboot = RebootViewModel(context, fileSystemManager, navController, _isRefreshing)
     // https://cs.android.com/android/platform/superproject/+/android-14.0.0_r18:bootable/recovery/recovery.cpp;l=320
@@ -109,9 +92,6 @@ class MainViewModel(
         initBootA,
         _backups
       )
-      if (slotA.hasError && slotSuffix == "_a") {
-        _error = slotA.error
-      }
       slotB = SlotViewModel(
         context,
         fileSystemManager,
@@ -123,9 +103,6 @@ class MainViewModel(
         initBootB,
         _backups
       )
-      if (slotB.hasError && slotSuffix == "_b") {
-        _error = slotB.error
-      }
     } else {
       val boot = PartitionUtil.findPartitionBlockDevice(context, "boot", "")!!
       val initBoot = PartitionUtil.findPartitionBlockDevice(context, "init_boot", "")
@@ -156,12 +133,12 @@ class MainViewModel(
       if (isAb) {
         slotB!!.refresh(context)
       }
-      backups.refresh()
+      backups.refresh(context)
     }
   }
 
   private fun launch(block: suspend () -> Unit) {
-    viewModelScope.launch(Dispatchers.IO) {
+    viewModelScope.launch {
       _isRefreshing.value = true
       try {
         withContext(Dispatchers.IO) {
@@ -172,9 +149,8 @@ class MainViewModel(
         navController.navigate("error/${e.message}") {
           popUpTo("main")
         }
-      } finally {
-        _isRefreshing.value = false
       }
+      _isRefreshing.value = false
     }
   }
 

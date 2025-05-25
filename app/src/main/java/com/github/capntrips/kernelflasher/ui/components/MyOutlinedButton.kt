@@ -21,7 +21,7 @@ fun MyOutlinedButton(
   OutlinedButton(
     modifier = Modifier
       .fillMaxWidth()
-      .padding(horizontal = 6.dp, vertical = 1.dp),
+      .padding(horizontal = 4.dp, vertical = 0.dp),
     shape = RoundedCornerShape(10.dp),
     colors = ButtonDefaults.outlinedButtonColors(
       containerColor = MaterialTheme.colorScheme.secondaryContainer,

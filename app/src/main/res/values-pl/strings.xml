@@ -67,4 +67,5 @@
     <string name="init_boot_fmt">Format init_boot.img</string>
     <string name="ramdisk_fmt">Format Ramdisk</string>
     <string name="susfs_version">Wersja SUSFS</string>
+    <string name="unsupported">unsupported</string>
 </resources>

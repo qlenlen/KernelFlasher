@@ -3,7 +3,6 @@ package com.github.capntrips.kernelflasher.ui.screens.slot
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
-import android.os.Build
 import android.provider.OpenableColumns
 import android.util.Log
 import android.widget.Toast
@@ -16,7 +15,6 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import com.github.capntrips.kernelflasher.R
 import com.github.capntrips.kernelflasher.common.PartitionUtil
 import com.github.capntrips.kernelflasher.common.extensions.ByteArray.toHex
 import com.github.capntrips.kernelflasher.common.extensions.ExtendedFile.inputStream
@@ -44,16 +42,27 @@ class SlotViewModel(
   private val _isRefreshing: MutableState<Boolean>,
   val isActive: Boolean,
   val slotSuffix: String,
-  private val boot: File,
-  private val initBoot: File?,
+  val boot: File,
+  val initBoot: File?,
   private val _backups: MutableMap<String, Backup>
 ) : ViewModel() {
   companion object {
     const val TAG: String = "KernelFlasher/SlotState"
+    const val HEADER_VER = "HEADER_VER"
+    const val KERNEL_FMT = "KERNEL_FMT"
+    const val RAMDISK_FMT = "RAMDISK_FMT"
   }
 
+  data class BootInfo(
+    var kernelVersion: String? = null,
+    var bootFmt: String? = null,
+    var headerVersion: String? = null,
+    var initBootFmt: String? = null,
+    var ramdiskLocation: String? = null
+  )
+
   private var _sha1: String? = null
-  var kernelVersion: String? = null
+  private val _bootInfo: MutableState<BootInfo> = mutableStateOf(BootInfo())
   var hasVendorDlkm: Boolean = false
   var isVendorDlkmMapped: Boolean = false
   var isVendorDlkmMounted: Boolean = false
@@ -66,39 +75,78 @@ class SlotViewModel(
   private val hashAlgorithm: String = "SHA-256"
   private var inInit = true
   private var _error: String? = null
+  private val _showCautionDialog: MutableState<Boolean> = mutableStateOf(false)
 
-  val sha1: String
-    get() = _sha1!!
+  val sha1: String?
+    get() = _sha1
   val flashOutput: List<String>
     get() = _flashOutput
   val uiPrintedOutput: List<String>
     get() = _flashOutput.filter { it.startsWith("ui_print") }
-      .map { it.substring("ui_print".length + 1) }
-  val wasFlashSuccess: Boolean?
-    get() = _wasFlashSuccess.value
+      .map { it.substringAfter("ui_print").trim() }.filter { it.isNotEmpty() || it == "" }
+  val wasFlashSuccess: MutableState<Boolean?>
+    get() = _wasFlashSuccess
   val backupPartitions: MutableMap<String, Boolean>
     get() = _backupPartitions
-  val isRefreshing: Boolean
-    get() = _isRefreshing.value
+  val isRefreshing: MutableState<Boolean>
+    get() = _isRefreshing
   val hasError: Boolean
     get() = _error != null
-  val error: String
-    get() = _error!!
+  val error: String?
+    get() = _error
+  val showCautionDialog: Boolean
+    get() = _showCautionDialog.value
+  val bootInfo: BootInfo
+    get() = _bootInfo.value
 
   init {
     refresh(context)
   }
 
+  private fun extractKernelValues(input: String, key: String): String? {
+    val regex = Regex("$key\\s*\\[([^]]+)]")
+    return regex.find(input)?.groupValues?.get(1)
+  }
+
   fun refresh(context: Context) {
+    _error = null
+    _sha1 = null
+    _bootInfo.value = _bootInfo.value.copy(
+      kernelVersion = null,
+      bootFmt = null,
+      headerVersion = null,
+      initBootFmt = null,
+      ramdiskLocation = null
+    )
+
     if (!isActive) {
       inInit = true
     }
 
     val magiskboot = File(context.filesDir, "magiskboot")
-    Shell.cmd("$magiskboot unpack $boot"
-).exec()
-    if (initBoot != null) {
-      Shell.cmd("$magiskboot unpack $initBoot").exec()
+    Shell.cmd("$magiskboot cleanup").exec()
+
+    val unpackBootOutput = mutableListOf<String>()
+    Shell.cmd("$magiskboot unpack $boot").to(unpackBootOutput, unpackBootOutput).exec()
+    val bootUnpackOp = unpackBootOutput.joinToString("\n")
+
+    _bootInfo.value.headerVersion = extractKernelValues(bootUnpackOp.trimIndent(), HEADER_VER)
+    _bootInfo.value.bootFmt = extractKernelValues(bootUnpackOp.trimIndent(), KERNEL_FMT)
+    _bootInfo.value.initBootFmt = extractKernelValues(bootUnpackOp.trimIndent(), RAMDISK_FMT)
+    if (_bootInfo.value.initBootFmt != null)
+      _bootInfo.value.ramdiskLocation = "boot.img"
+
+    Log.d(TAG, _bootInfo.value.toString())
+    if (initBoot != null && _bootInfo.value.initBootFmt == null) {
+      val unpackInitBootOutput = mutableListOf<String>()
+      if (Shell.cmd("$magiskboot unpack $initBoot").to(unpackInitBootOutput, unpackInitBootOutput)
+          .exec().isSuccess
+      ) {
+        val initBootUnpackOp = unpackInitBootOutput.joinToString("\n")
+        _bootInfo.value.initBootFmt =
+          extractKernelValues(initBootUnpackOp.trimIndent(), RAMDISK_FMT)
+        _bootInfo.value.ramdiskLocation = "init_boot.img"
+      }
     }
 
     val ramdisk = File(context.filesDir, "ramdisk.cpio")
@@ -121,18 +169,22 @@ class SlotViewModel(
 
     if (ramdisk.exists()) {
       when (Shell.cmd("$magiskboot cpio ramdisk.cpio test").exec().code) {
-        0, 4 -> _sha1 = Shell.cmd("$magiskboot sha1 $boot").exec().out.firstOrNull()
+        0 -> _sha1 = Shell.cmd("$magiskboot sha1 $boot").exec().out.firstOrNull()
         1 -> _sha1 = Shell.cmd("$magiskboot cpio ramdisk.cpio sha1").exec().out.firstOrNull()
-        else -> log(context, "Invalid ramdisk in boot.img", shouldThrow = true)
+        else -> _error = "Invalid ramdisk in boot.img"
       }
     } else if (kernel.exists()) {
       _sha1 = Shell.cmd("$magiskboot sha1 $boot").exec().out.firstOrNull()
-    } else {
-      if (Build.MANUFACTURER == "samsung" && !kernel.exists()) {
-        _sha1 = "vab,none"
-      } else {
-        log(context, "Invalid boot.img, no ramdisk or kernel found", shouldThrow = true)
+      if (_bootInfo.value.headerVersion.equals("4") && _bootInfo.value.ramdiskLocation.equals(null)) {
+        _bootInfo.value.ramdiskLocation = "boot.img"
+        _bootInfo.value.initBootFmt = "lz4_legacy"
       }
+    } else {
+      if (_bootInfo.value.headerVersion.equals("4") && _bootInfo.value.ramdiskLocation.equals(null)) {
+        _bootInfo.value.ramdiskLocation = "boot.img"
+        _bootInfo.value.initBootFmt = "lz4_legacy"
+      }
+      _error = "Unable to generate SHA1 hash. Invalid boot.img or magiskboot unpack failed!"
     }
     Shell.cmd("$magiskboot cleanup").exec()
 
@@ -140,7 +192,7 @@ class SlotViewModel(
       _backupPartitions[partitionName] = true
     }
 
-    kernelVersion = null
+    _bootInfo.value.kernelVersion = null
     inInit = false
   }
 
@@ -160,6 +212,14 @@ class SlotViewModel(
       }
       _isRefreshing.value = false
     }
+  }
+
+  private fun showCautionDialog() {
+    _showCautionDialog.value = true
+  }
+
+  fun hideCautionDialog() {
+    _showCautionDialog.value = false
   }
 
   // TODO: use base class for common functions
@@ -183,7 +243,6 @@ class SlotViewModel(
   private fun uiPrint(message: String) {
     viewModelScope.launch(Dispatchers.Main) {
       _flashOutput.add("ui_print $message")
-      _flashOutput.add("      ui_print")
     }
   }
 
@@ -250,15 +309,12 @@ class SlotViewModel(
   private fun _getKernel(context: Context) {
     val magiskboot = File(context.filesDir, "magiskboot")
     Shell.cmd("$magiskboot unpack $boot").exec()
-    if (initBoot != null) {
-      Shell.cmd("$magiskboot unpack $initBoot").exec()
-    }
     val kernel = File(context.filesDir, "kernel")
     if (kernel.exists()) {
       val result =
         Shell.cmd("strings kernel | grep -E -m1 'Linux version.*#' | cut -d\\  -f3-").exec().out
       if (result.isNotEmpty()) {
-        kernelVersion =
+        _bootInfo.value.kernelVersion =
           result[0].replace("""\(.+\)""".toRegex(), "").replace("""\s+""".toRegex(), " ")
       }
     }
@@ -386,13 +442,13 @@ class SlotViewModel(
   fun backup(context: Context) {
     launch {
       _clearFlash()
-      val currentKernelVersion = if (kernelVersion != null) {
-        kernelVersion
+      val currentKernelVersion = if (_bootInfo.value.kernelVersion != null) {
+        _bootInfo.value.kernelVersion
       } else if (isActive) {
         System.getProperty("os.version")!!
       } else {
         _getKernel(context)
-        kernelVersion
+        _bootInfo.value.kernelVersion
       }
       val now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd--HH-mm"))
       val backupDir = createBackupDir(context, now)
@@ -420,7 +476,7 @@ class SlotViewModel(
         val now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd--HH-mm"))
         val backupDir = createBackupDir(context, now)
         val jsonFile = backupDir.getChildFile("backup.json")
-        val backup = Backup(now, "ak3", kernelVersion!!, null, flashFilename)
+        val backup = Backup(now, "ak3", _bootInfo.value.kernelVersion!!, null, flashFilename)
         val indentedJson = Json { prettyPrint = true }
         jsonFile.outputStream()
           .use { it.write(indentedJson.encodeToString(backup).toByteArray(Charsets.UTF_8)) }
@@ -443,7 +499,7 @@ class SlotViewModel(
   private fun resetSlot() {
     val activeSlotSuffix = Shell.cmd("getprop ro.boot.slot_suffix").exec().out[0]
     val newSlot = if (activeSlotSuffix == "_a") "_b" else "_a"
-    Shell.cmd("magisk resetprop -n ro.boot.slot_suffix $newSlot").exec()
+    Shell.cmd("resetprop -n ro.boot.slot_suffix $newSlot").exec()
     wasSlotReset = !wasSlotReset
   }
 
@@ -460,28 +516,6 @@ class SlotViewModel(
           withContext(Dispatchers.Main) {
             callback?.invoke()
           }
-    @Suppress("FunctionName")
-    private fun _copyDriver(context: Context, uri: Uri) {
-        flashUri = uri
-        flashFilename = context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-            if (!cursor.moveToFirst()) return@use null
-            val name = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-            return@use cursor.getString(name)
-        } ?: "kernelsu.ko"
-        val source = context.contentResolver.openInputStream(uri)
-        val file = File(context.filesDir, "kernelsu.ko")
-        source.use { inputStream ->
-            file.outputStream().use { outputStream ->
-                inputStream?.copyTo(outputStream)
-            }
-        }
-        Shell.cmd("chmod +rwx $file").exec()
-    }
-
-    @Suppress("FunctionName")
-    private suspend fun _flashAk3(context: Context, type: String) {
-        if (!isActive) {
-            resetSlot()
         }
       } catch (e: Exception) {
         zip.delete()
@@ -530,7 +564,25 @@ class SlotViewModel(
   }
 
   @Suppress("FunctionName")
-  private suspend fun _flashAk3(context: Context) {
+  private fun _copyDriver(context: Context, uri: Uri) {
+    flashUri = uri
+    flashFilename = context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+      if (!cursor.moveToFirst()) return@use null
+      val name = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+      return@use cursor.getString(name)
+    } ?: "kernelsu.ko"
+    val source = context.contentResolver.openInputStream(uri)
+    val file = File(context.filesDir, "kernelsu.ko")
+    source.use { inputStream ->
+      file.outputStream().use { outputStream ->
+        inputStream?.copyTo(outputStream)
+      }
+    }
+    Shell.cmd("chmod +rwx $file").exec()
+  }
+
+  @Suppress("FunctionName")
+  private suspend fun _flashAk3(context: Context, type: String) {
     if (!isActive) {
       resetSlot()
     }
@@ -540,20 +592,20 @@ class SlotViewModel(
       if (zip.exists()) {
         _wasFlashSuccess.value = false
         val files = File(context.filesDir.canonicalPath)
-        val flashScript = File(files, "flash_ak3.sh")
-        val result =
-          Shell.Builder.create().setFlags(Shell.FLAG_MOUNT_MASTER or Shell.FLAG_REDIRECT_STDERR)
-            .build().newJob().add("F=$files Z=\"$zip\" /system/bin/sh $flashScript").to(flashOutput)
-            .exec()
+        val flashScript = File(files, "flash_ak3$type.sh")
+        val result = Shell.Builder.create().setFlags(Shell.FLAG_MOUNT_MASTER).build().newJob()
+          .add("F=$files Z=\"$zip\" /system/bin/sh $flashScript").to(flashOutput, flashOutput)
+          .exec()
         if (result.isSuccess) {
-          log(context, context.getString(R.string.flash_ok))
+          log(context, "Kernel flashed successfully")
           _wasFlashSuccess.value = true
         } else {
-          log(context, context.getString(R.string.flash_error), shouldThrow = false)
+          log(context, "Failed to flash zip", shouldThrow = false)
+//                    Log.e(TAG, "Error: ${result.stderr.joinToString("\n")}")
         }
         clearTmp(context)
       } else {
-        log(context, context.getString(R.string.flash_miss), shouldThrow = true)
+        log(context, "AK3 zip is missing", shouldThrow = true)
       }
     } catch (e: Exception) {
       clearFlash(context)
@@ -562,6 +614,33 @@ class SlotViewModel(
       uiPrint("")
       if (wasSlotReset) {
         resetSlot()
+        viewModelScope.launch(Dispatchers.Main) {
+          showCautionDialog() // Show dialog instead of uiPrint
+        }
+      }
+    }
+  }
+
+  fun switchSlot(context: Context) {
+    viewModelScope.launch(Dispatchers.IO) {
+      try {
+        // Get current slot
+        val currentSlot = Shell.cmd("getprop ro.boot.slot_suffix").exec().out.firstOrNull() ?: "_a"
+        val targetSlot = if (currentSlot == "_a") "b" else "a"
+
+        // Execute bootctl command
+        val result = Shell.cmd("bootctl set-active-boot-slot $targetSlot").exec()
+
+        if (result.isSuccess) {
+          log(context, "Slot was successfully switched to $targetSlot", shouldThrow = false)
+        } else {
+          log(context, "Failed to switch slot", shouldThrow = false)
+        }
+      } catch (e: Exception) {
+        withContext(Dispatchers.Main) {
+          Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+        throw e
       }
     }
   }
@@ -570,7 +649,7 @@ class SlotViewModel(
     launch {
       _clearFlash()
       _copyFile(context, currentBackup, filename)
-      _flashAk3(context)
+      _flashAk3(context, "")
     }
   }
 
@@ -578,7 +657,149 @@ class SlotViewModel(
     launch {
       _clearFlash()
       _copyFile(context, uri)
-      _flashAk3(context)
+      _flashAk3(context, "")
+    }
+  }
+
+  fun flashAk3_mkbootfs(context: Context, currentBackup: String, filename: String) {
+    launch {
+      _clearFlash()
+      _copyFile(context, currentBackup, filename)
+      _flashAk3(context, "_mkbootfs")
+    }
+  }
+
+  fun flashAk3_mkbootfs(context: Context, uri: Uri) {
+    launch {
+      _clearFlash()
+      _copyFile(context, uri)
+      _flashAk3(context, "_mkbootfs")
+    }
+  }
+
+  fun flashKsuDriver(context: Context, uri: Uri) {
+    launch {
+      _clearFlash()
+      addMessage("Copying KernelSU Driver ...")
+      _copyDriver(context, uri)
+      if (!isActive) {
+        resetSlot()
+      }
+      val driver = fileSystemManager.getFile(context.filesDir, "kernelsu.ko")
+      val newBootImg = File(context.filesDir, "new-boot.img")
+      var image: ExtendedFile? = null
+      try {
+        if (driver.exists()) {
+          addMessage("Copied $flashFilename")
+          _wasFlashSuccess.value = false
+          val partitionName = bootInfo.ramdiskLocation?.removeSuffix(".img") ?: "boot"
+          val magiskboot = File(context.filesDir, "magiskboot")
+          val ksuinit = File(context.filesDir, "ksuinit")
+          if (partitionName == "boot") {
+            addMessage("Unpacking boot.img")
+            Shell.cmd("$magiskboot unpack $boot").exec()
+          } else {
+            addMessage("Unpacking init_boot")
+            Shell.cmd("$magiskboot unpack $initBoot").exec()
+          }
+
+          val ramdisk = File(context.filesDir, "ramdisk.cpio")
+
+          if (ramdisk.exists()) {
+            addMessage("Patching Ramdisk")
+
+            if (Shell.cmd("$magiskboot cpio ramdisk.cpio 'exists kernelsu.ko'")
+                .to(flashOutput, flashOutput).exec().isSuccess
+            ) {
+              Shell.cmd("$magiskboot cpio ramdisk.cpio 'rm init'")
+                .to(flashOutput, flashOutput).exec()
+              Shell.cmd("$magiskboot cpio ramdisk.cpio 'add 0755 init $ksuinit'")
+                .to(flashOutput, flashOutput).exec()
+              Shell.cmd("$magiskboot cpio ramdisk.cpio 'rm kernelsu.ko'")
+                .to(flashOutput, flashOutput).exec()
+              Shell.cmd("$magiskboot cpio ramdisk.cpio 'add 0755 kernelsu.ko $driver'")
+                .to(flashOutput, flashOutput).exec()
+            } else {
+              Shell.cmd("$magiskboot cpio ramdisk.cpio 'mv init init.real'")
+                .to(flashOutput, flashOutput).exec()
+              Shell.cmd("$magiskboot cpio ramdisk.cpio 'add 0755 init $ksuinit'")
+                .to(flashOutput, flashOutput).exec()
+              Shell.cmd("$magiskboot cpio ramdisk.cpio 'add 0755 kernelsu.ko $driver'")
+                .to(flashOutput, flashOutput).exec()
+            }
+            if (partitionName == "boot") {
+              addMessage("Repacking boot.img")
+              Shell.cmd("$magiskboot repack $boot").exec()
+            } else {
+              addMessage("Repacking init_boot.img")
+              Shell.cmd("$magiskboot repack $initBoot").exec()
+            }
+
+            if (newBootImg.exists()) {
+              image = fileSystemManager.getFile(context.filesDir, "new-boot.img")
+            } else {
+              Shell.cmd("$magiskboot cleanup").exec()
+              log(context, "Image Repack Failed!", shouldThrow = true)
+            }
+          } else {
+            Shell.cmd("$magiskboot cleanup").exec()
+            log(context, "Ramdisk not found", shouldThrow = true)
+          }
+          Shell.cmd("$magiskboot cleanup").exec()
+
+          addMessage("Flashing $image to $partitionName$slotSuffix ...")
+          val blockDevice = partitionName?.let {
+            PartitionUtil.findPartitionBlockDevice(
+              context,
+              it, slotSuffix
+            )
+          }
+          if (blockDevice != null && blockDevice.exists()) {
+            if (PartitionUtil.isPartitionLogical(context, partitionName)) {
+              if (image != null) {
+                PartitionUtil.flashLogicalPartition(
+                  context,
+                  image,
+                  blockDevice,
+                  partitionName,
+                  slotSuffix,
+                  hashAlgorithm
+                ) { message ->
+                  addMessage(message)
+                }
+              }
+            } else {
+              if (image != null) {
+                PartitionUtil.flashBlockDevice(image, blockDevice, hashAlgorithm)
+              }
+            }
+          } else {
+            log(context, "Partition $partitionName$slotSuffix was not found", shouldThrow = true)
+          }
+          addMessage("Flashed ${image?.name} to $partitionName$slotSuffix")
+          addMessage("Cleaning up ...")
+          clearTmp(context)
+          addMessage("Done.")
+          _wasFlashSuccess.value = true
+        } else {
+          log(context, "KernelSU Driver is missing", shouldThrow = true)
+        }
+      } catch (e: Exception) {
+        clearFlash(context)
+        throw e
+      } finally {
+        addMessage("")
+        if (driver.exists())
+          driver.delete()
+        if (newBootImg.exists())
+          newBootImg.delete()
+        if (wasSlotReset) {
+          resetSlot()
+          viewModelScope.launch(Dispatchers.Main) {
+            showCautionDialog() // Show dialog instead of uiPrint
+          }
+        }
+      }
     }
   }
 
@@ -631,233 +852,9 @@ class SlotViewModel(
         addMessage("")
         if (wasSlotReset) {
           resetSlot()
-    }
-	
-	fun switchSlot(context: Context) {
-		viewModelScope.launch(Dispatchers.IO) {
-			try {
-				// Get current slot
-				val currentSlot = Shell.cmd("getprop ro.boot.slot_suffix").exec().out.firstOrNull() ?: "_a"
-				val targetSlot = if (currentSlot == "_a") "b" else "a"
-				
-				// Execute bootctl command
-				val result = Shell.cmd("bootctl set-active-boot-slot $targetSlot").exec()
-				
-				if (result.isSuccess) {
-					log(context, "Slot was successfully switched to $targetSlot", shouldThrow = false)
-				} else {
-					log(context, "Failed to switch slot", shouldThrow = false)
-				}
-			} catch (e: Exception) {
-				withContext(Dispatchers.Main) {
-					Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-				}
-				throw e
-			}
-		}
-	}
-
-    fun flashAk3(context: Context, currentBackup: String, filename: String) {
-        launch {
-            _clearFlash()
-            _copyFile(context, currentBackup, filename)
-            _flashAk3(context, "")
-        }
-    }
-
-    fun flashAk3(context: Context, uri: Uri) {
-        launch {
-            _clearFlash()
-            _copyFile(context, uri)
-            _flashAk3(context, "")
-        }
-    }
-
-    fun flashAk3_mkbootfs(context: Context, currentBackup: String, filename: String) {
-        launch {
-            _clearFlash()
-            _copyFile(context, currentBackup, filename)
-            _flashAk3(context, "_mkbootfs")
-        }
-    }
-
-    fun flashAk3_mkbootfs(context: Context, uri: Uri) {
-        launch {
-            _clearFlash()
-            _copyFile(context, uri)
-            _flashAk3(context, "_mkbootfs")
-        }
-    }
-
-    fun flashKsuDriver(context: Context, uri: Uri) {
-        launch {
-            _clearFlash()
-            addMessage("Copying KernelSU Driver ...")
-            _copyDriver(context, uri)
-            if (!isActive) {
-                resetSlot()
-            }
-            val driver = fileSystemManager.getFile(context.filesDir, "kernelsu.ko")
-            val newBootImg = File(context.filesDir, "new-boot.img")
-            var image: ExtendedFile? = null
-            try {
-                if (driver.exists()) {
-                    addMessage("Copied $flashFilename")
-                    _wasFlashSuccess.value = false
-                    val partitionName = bootInfo.ramdiskLocation?.removeSuffix(".img") ?: "boot"
-                    val magiskboot = File(context.filesDir, "magiskboot")
-                    val ksuinit = File(context.filesDir, "ksuinit")
-                    if(partitionName == "boot")
-                    {
-                        addMessage("Unpacking boot.img")
-                        Shell.cmd("$magiskboot unpack $boot").exec()
-                    }
-                    else
-                    {
-                        addMessage("Unpacking init_boot")
-                        Shell.cmd("$magiskboot unpack $initBoot").exec()
-                    }
-
-                    val ramdisk = File(context.filesDir, "ramdisk.cpio")
-
-                    if (ramdisk.exists()) {
-                        addMessage("Patching Ramdisk")
-
-                        if(Shell.cmd("$magiskboot cpio ramdisk.cpio 'exists kernelsu.ko'").to(flashOutput, flashOutput).exec().isSuccess) {
-                            Shell.cmd("$magiskboot cpio ramdisk.cpio 'rm init'")
-                                .to(flashOutput, flashOutput).exec()
-                            Shell.cmd("$magiskboot cpio ramdisk.cpio 'add 0755 init $ksuinit'")
-                                .to(flashOutput, flashOutput).exec()
-                            Shell.cmd("$magiskboot cpio ramdisk.cpio 'rm kernelsu.ko'")
-                                .to(flashOutput, flashOutput).exec()
-                            Shell.cmd("$magiskboot cpio ramdisk.cpio 'add 0755 kernelsu.ko $driver'")
-                                .to(flashOutput, flashOutput).exec()
-                        }
-                        else
-                        {
-                            Shell.cmd("$magiskboot cpio ramdisk.cpio 'mv init init.real'").to(flashOutput, flashOutput).exec()
-                            Shell.cmd("$magiskboot cpio ramdisk.cpio 'add 0755 init $ksuinit'")
-                                .to(flashOutput, flashOutput).exec()
-                            Shell.cmd("$magiskboot cpio ramdisk.cpio 'add 0755 kernelsu.ko $driver'")
-                                .to(flashOutput, flashOutput).exec()
-                        }
-                        if(partitionName == "boot")
-                        {
-                            addMessage("Repacking boot.img")
-                            Shell.cmd("$magiskboot repack $boot").exec()
-                        }
-                        else
-                        {
-                            addMessage("Repacking init_boot.img")
-                            Shell.cmd("$magiskboot repack $initBoot").exec()
-                        }
-
-                        if(newBootImg.exists()) {
-                            image = fileSystemManager.getFile(context.filesDir, "new-boot.img")
-                        }
-                        else {
-                            Shell.cmd("$magiskboot cleanup").exec()
-                            log(context, "Image Repack Failed!", shouldThrow = true)
-                        }
-                    } else {
-                        Shell.cmd("$magiskboot cleanup").exec()
-                        log(context, "Ramdisk not found", shouldThrow = true)
-                    }
-                    Shell.cmd("$magiskboot cleanup").exec()
-
-                    addMessage("Flashing $image to $partitionName$slotSuffix ...")
-                    val blockDevice = partitionName?.let {
-                        PartitionUtil.findPartitionBlockDevice(context,
-                            it, slotSuffix)
-                    }
-                    if (blockDevice != null && blockDevice.exists()) {
-                        if (PartitionUtil.isPartitionLogical(context, partitionName)) {
-                            if (image != null) {
-                                PartitionUtil.flashLogicalPartition(context, image, blockDevice, partitionName, slotSuffix, hashAlgorithm) { message ->
-                                    addMessage(message)
-                                }
-                            }
-                        } else {
-                            if (image != null) {
-                                PartitionUtil.flashBlockDevice(image, blockDevice, hashAlgorithm)
-                            }
-                        }
-                    } else {
-                        log(context, "Partition $partitionName$slotSuffix was not found", shouldThrow = true)
-                    }
-                    addMessage("Flashed ${image?.name} to $partitionName$slotSuffix")
-                    addMessage("Cleaning up ...")
-                    clearTmp(context)
-                    addMessage("Done.")
-                    _wasFlashSuccess.value = true
-                } else {
-                log(context, "KernelSU Driver is missing", shouldThrow = true)
-            }
-            } catch (e: Exception) {
-                clearFlash(context)
-                throw e
-            } finally {
-                addMessage("")
-                if (driver.exists())
-                    driver.delete()
-                if (newBootImg.exists())
-                    newBootImg.delete()
-                if (wasSlotReset) {
-                    resetSlot()
-                    viewModelScope.launch(Dispatchers.Main) {
-                        showCautionDialog() // Show dialog instead of uiPrint
-                    }
-                }
-            }
-        }
-    }
-
-    fun flashImage(context: Context, uri: Uri, partitionName: String) {
-        launch {
-            _clearFlash()
-            addMessage("Copying image ...")
-            _copyFile(context, uri)
-            if (!isActive) {
-                resetSlot()
-            }
-            val image = fileSystemManager.getFile(context.filesDir, flashFilename!!)
-            try {
-                if (image.exists()) {
-                    addMessage("Copied $flashFilename")
-                    _wasFlashSuccess.value = false
-                    addMessage("Flashing $flashFilename to $partitionName ...")
-                    val blockDevice = PartitionUtil.findPartitionBlockDevice(context, partitionName, slotSuffix)
-                    if (blockDevice != null && blockDevice.exists()) {
-                        if (PartitionUtil.isPartitionLogical(context, partitionName)) {
-                            PartitionUtil.flashLogicalPartition(context, image, blockDevice, partitionName, slotSuffix, hashAlgorithm) { message ->
-                                addMessage(message)
-                            }
-                        } else {
-                            PartitionUtil.flashBlockDevice(image, blockDevice, hashAlgorithm)
-                        }
-                    } else {
-                        log(context, "Partition $partitionName was not found", shouldThrow = true)
-                    }
-                    addMessage("Flashed $flashFilename to $partitionName")
-                    addMessage("Cleaning up ...")
-                    clearTmp(context)
-                    addMessage("Done.")
-                    _wasFlashSuccess.value = true
-                } else {
-                    log(context, "Partition image is missing", shouldThrow = true)
-                }
-            } catch (e: Exception) {
-                clearFlash(context)
-                throw e
-            } finally {
-                addMessage("")
-                if (wasSlotReset) {
-                    resetSlot()
-                    viewModelScope.launch(Dispatchers.Main) {
-                        showCautionDialog() // Show dialog instead of uiPrint
-                    }
-                }
-            }
+          viewModelScope.launch(Dispatchers.Main) {
+            showCautionDialog() // Show dialog instead of uiPrint
+          }
         }
       }
     }

@@ -35,17 +35,15 @@ fun ColumnScope.SlotContent(
     navController = navController,
     isSlotScreen = true
   )
-  AnimatedVisibility(!viewModel.isRefreshing) {
+  AnimatedVisibility(!viewModel.isRefreshing.value) {
     Column {
       Spacer(Modifier.height(5.dp))
-      if (viewModel.isActive) {
-        MyOutlinedButton(
-          {
-            navController.navigate("slot$slotSuffix/flash")
-          }
-        ) {
-          Text(stringResource(R.string.flash))
+      MyOutlinedButton(
+        {
+          navController.navigate("slot$slotSuffix/flash")
         }
+      ) {
+        Text(stringResource(R.string.flash))
       }
       MyOutlinedButton(
         {
@@ -55,22 +53,20 @@ fun ColumnScope.SlotContent(
       ) {
         Text(stringResource(R.string.backup))
       }
-      if (viewModel.isActive) {
-        MyOutlinedButton(
-          {
-            navController.navigate("slot$slotSuffix/backups")
-          }
-        ) {
-          Text(stringResource(R.string.restore))
+      MyOutlinedButton(
+        {
+          navController.navigate("slot$slotSuffix/backups")
         }
+      ) {
+        Text(stringResource(R.string.restore))
       }
       MyOutlinedButton(
-        { if (!viewModel.isRefreshing) viewModel.getKernel(context) }
+        { if (!viewModel.isRefreshing.value) viewModel.getKernel(context) }
       ) {
         Text(stringResource(R.string.check_kernel_version))
       }
       if (viewModel.hasVendorDlkm) {
-        AnimatedVisibility(!viewModel.isRefreshing) {
+        AnimatedVisibility(!viewModel.isRefreshing.value) {
           AnimatedVisibility(viewModel.isVendorDlkmMounted) {
             MyOutlinedButton(
               { viewModel.unmountVendorDlkm(context) }

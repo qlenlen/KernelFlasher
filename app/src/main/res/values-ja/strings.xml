@@ -67,5 +67,6 @@
   <string name="init_boot_fmt">init_boot.img形式</string>
   <string name="ramdisk_fmt">Ramdisk形式</string>
   <string name="susfs_version">SUSFSバージョン</string>
+  <string name="unsupported">unsupported</string>
   <!-- TODO: Make error and success messages string resources -->
 </resources>

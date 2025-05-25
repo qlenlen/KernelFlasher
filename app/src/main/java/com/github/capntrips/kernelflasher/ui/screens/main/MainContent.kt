@@ -1,6 +1,5 @@
 package com.github.capntrips.kernelflasher.ui.screens.main
 
-import android.content.Context
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.ColumnScope
@@ -23,11 +22,6 @@ import com.github.capntrips.kernelflasher.ui.components.MyOutlinedButton
 import com.github.capntrips.kernelflasher.ui.components.SlotCard
 import kotlinx.serialization.ExperimentalSerializationApi
 
-private fun parseSusfsVersion(version: SusStatus, context: Context): String {
-  return context.getString(R.string.susfs_version, version.version, version.mode)
-}
-
-
 @ExperimentalMaterial3Api
 @ExperimentalSerializationApi
 @Composable
@@ -44,17 +38,6 @@ fun ColumnScope.MainContent(
       mutableMaxWidth = cardWidth
     )
     DataRow(stringResource(R.string.build_number), Build.ID, mutableMaxWidth = cardWidth)
-    if (viewModel.susfsVersion.isSupported()) {
-      DataRow(
-        "SusFS",
-        if (viewModel.susfsVersion.isSupported()) parseSusfsVersion(
-          viewModel.susfsVersion,
-          context
-        ) else context.getString(R.string.unsupported),
-        mutableMaxWidth = cardWidth,
-        clickable = true
-      )
-    }
     DataRow(
       stringResource(R.string.kernel_version),
       viewModel.kernelVersion,
@@ -68,6 +51,13 @@ fun ColumnScope.MainContent(
         mutableMaxWidth = cardWidth
       )
     }
+    if (viewModel.susfsVersion != "v0.0.0" && viewModel.susfsVersion != "Invalid") {
+      DataRow(
+        stringResource(R.string.susfs_version),
+        viewModel.susfsVersion,
+        mutableMaxWidth = cardWidth
+      )
+    }
   }
   Spacer(Modifier.height(16.dp))
   SlotCard(
@@ -75,28 +65,44 @@ fun ColumnScope.MainContent(
     viewModel = viewModel.slotA,
     navController = navController
   )
-  if (viewModel.isAb) {
+  if (viewModel.isAb && viewModel.slotB?.hasError == false) {
     Spacer(Modifier.height(16.dp))
     SlotCard(
       title = stringResource(R.string.slot_b),
-      viewModel = viewModel.slotB!!,
+      viewModel = viewModel.slotB,
       navController = navController
     )
   }
   Spacer(Modifier.height(16.dp))
   AnimatedVisibility(!viewModel.isRefreshing) {
-    MyOutlinedButton(onclick = { navController.navigate("backups") }) { Text(stringResource(R.string.backups)) }
+    MyOutlinedButton(
+      onclick = { navController.navigate("backups") }
+    ) {
+      Text(stringResource(R.string.backups))
+    }
   }
   if (viewModel.hasRamoops) {
-    MyOutlinedButton(onclick = { navController.navigate("ramoops") }) { Text(stringResource(R.string.save_ramoops)) }
+    MyOutlinedButton(
+      onclick = { viewModel.saveRamoops(context) }
+    ) {
+      Text(stringResource(R.string.save_ramoops))
+    }
+  }
+  MyOutlinedButton(
+    onclick = { viewModel.saveDmesg(context) }
+  ) {
+    Text(stringResource(R.string.save_dmesg))
+  }
+  MyOutlinedButton(
+    onclick = { viewModel.saveLogcat(context) }
+  ) {
+    Text(stringResource(R.string.save_logcat))
   }
   AnimatedVisibility(!viewModel.isRefreshing) {
-    MyOutlinedButton(onclick = { viewModel.saveDmesg(context) }) { Text(stringResource(R.string.save_dmesg)) }
-  }
-  AnimatedVisibility(!viewModel.isRefreshing) {
-    MyOutlinedButton(onclick = { viewModel.saveLogcat(context) }) { Text(stringResource(R.string.save_logcat)) }
-  }
-  AnimatedVisibility(!viewModel.isRefreshing) {
-    MyOutlinedButton(onclick = { navController.navigate("reboot") }) { Text(stringResource(R.string.reboot)) }
+    MyOutlinedButton(
+      onclick = { navController.navigate("reboot") }
+    ) {
+      Text(stringResource(R.string.reboot))
+    }
   }
 }

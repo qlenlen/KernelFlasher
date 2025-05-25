@@ -26,8 +26,8 @@ fun SlotCard(
   DataCard(
     title = title,
     button = {
-      if (!isSlotScreen && !viewModel.hasError) {
-        AnimatedVisibility(!viewModel.isRefreshing) {
+      if (!isSlotScreen) {
+        AnimatedVisibility(!viewModel.isRefreshing.value) {
           ViewButton {
             navController.navigate("slot${viewModel.slotSuffix}")
           }
@@ -36,49 +36,58 @@ fun SlotCard(
     }
   ) {
     val cardWidth = remember { mutableIntStateOf(0) }
-    if (!viewModel.hasError) {
+    if (!viewModel.sha1.isNullOrEmpty()) {
       DataRow(
         label = stringResource(R.string.boot_sha1),
-        value = if (viewModel.sha1.length > 12) viewModel.sha1.substring(0, 8) else viewModel.sha1,
+        value = viewModel.sha1!!.substring(0, 8),
         valueStyle = MaterialTheme.typography.titleSmall.copy(
           fontFamily = FontFamily.Monospace,
           fontWeight = FontWeight.Medium
         ),
         mutableMaxWidth = cardWidth
       )
-      AnimatedVisibility(!viewModel.isRefreshing && viewModel.kernelVersion != null) {
-        DataRow(
-          label = stringResource(R.string.kernel_version),
-          value = if (viewModel.kernelVersion != null) viewModel.kernelVersion!! else "",
-          mutableMaxWidth = cardWidth,
-          clickable = true
-        )
-      }
-      if (showDlkm && viewModel.hasVendorDlkm) {
-        var vendorDlkmValue = stringResource(R.string.not_found)
-        if (viewModel.isVendorDlkmMapped) {
-          vendorDlkmValue = if (viewModel.isVendorDlkmMounted) {
-            String.format(
-              "%s, %s",
-              stringResource(R.string.exists),
-              stringResource(R.string.mounted)
-            )
-          } else {
-            String.format(
-              "%s, %s",
-              stringResource(R.string.exists),
-              stringResource(R.string.unmounted)
-            )
-          }
+    }
+    AnimatedVisibility(!viewModel.isRefreshing.value && viewModel.bootInfo.kernelVersion != null) {
+      DataRow(
+        label = stringResource(R.string.kernel_version),
+        value = if (viewModel.bootInfo.kernelVersion != null) viewModel.bootInfo.kernelVersion!! else "",
+        mutableMaxWidth = cardWidth,
+        clickable = true
+      )
+    }
+    if (showDlkm && viewModel.hasVendorDlkm) {
+      var vendorDlkmValue = stringResource(R.string.not_found)
+      if (viewModel.isVendorDlkmMapped) {
+        vendorDlkmValue = if (viewModel.isVendorDlkmMounted) {
+          String.format("%s, %s", stringResource(R.string.exists), stringResource(R.string.mounted))
+        } else {
+          String.format(
+            "%s, %s",
+            stringResource(R.string.exists),
+            stringResource(R.string.unmounted)
+          )
         }
-        DataRow(stringResource(R.string.vendor_dlkm), vendorDlkmValue, mutableMaxWidth = cardWidth)
       }
-    } else {
+      DataRow(stringResource(R.string.vendor_dlkm), vendorDlkmValue, mutableMaxWidth = cardWidth)
+    }
+    DataRow(
+      label = stringResource(R.string.boot_fmt),
+      value = viewModel.bootInfo.bootFmt ?: stringResource(R.string.not_found),
+      mutableMaxWidth = cardWidth
+    )
+    DataRow(
+      label = if (viewModel.bootInfo.ramdiskLocation == "init_boot.img") stringResource(R.string.init_boot_fmt) else stringResource(
+        R.string.ramdisk_fmt
+      ),
+      value = viewModel.bootInfo.initBootFmt ?: stringResource(R.string.not_found),
+      mutableMaxWidth = cardWidth
+    )
+    if (!viewModel.isRefreshing.value && viewModel.hasError) {
       Row {
         DataValue(
-          value = viewModel.error,
+          value = viewModel.error ?: "",
           color = MaterialTheme.colorScheme.error,
-          style = MaterialTheme.typography.titleMedium,
+          style = MaterialTheme.typography.titleSmall,
           clickable = true
         )
       }

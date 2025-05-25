@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
@@ -31,6 +32,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Properties
 
 class BackupsViewModel(
+  context: Context,
   private val fileSystemManager: FileSystemManager,
   private val navController: NavController,
   private val _isRefreshing: MutableState<Boolean>,
@@ -58,6 +60,12 @@ class BackupsViewModel(
   private val _backupPartitions: SnapshotStateMap<String, Boolean> = mutableStateMapOf()
   private val hashAlgorithm: String = "SHA-256"
 
+  @Deprecated(
+    "Backup migration will be removed in the first stable release",
+    level = DeprecationLevel.WARNING
+  )
+  private var _needsMigration: MutableState<Boolean> = mutableStateOf(false)
+
   val restoreOutput: List<String>
     get() = _restoreOutput
   val backupPartitions: MutableMap<String, Boolean>
@@ -68,10 +76,14 @@ class BackupsViewModel(
     get() = _backups
 
   init {
-    refresh()
+    refresh(context)
   }
 
-  fun refresh() {
+  fun refresh(context: Context) {
+    val oldDir = context.getExternalFilesDir(null)
+    val oldBackupsDir = File(oldDir, "backups")
+    // Deprecated: Backup migration will be removed in the first stable release
+    _needsMigration.value = oldBackupsDir.exists() && oldBackupsDir.listFiles()?.size!! > 0
     @SuppressLint("SdCardPath")
     val externalDir = File("/sdcard/KernelFlasher")
     val backupsDir = fileSystemManager.getFile("$externalDir/backups")
@@ -293,7 +305,7 @@ class BackupsViewModel(
         }
         oldBackupsDir.delete()
       }
-      refresh()
+      refresh(context)
     }
   }
 }

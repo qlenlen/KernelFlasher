@@ -15,7 +15,7 @@ libsu = "5.2.1"
 material = "1.12.0"
 okhttp = "5.1.0"
 
-android-application = "8.11.1"
+android-application = "8.12.0"
 devtools-ksp = "2.2.0-2.0.2"
 ui-tooling-preview-android = "1.8.3"
 animation-core-android = "1.8.3"

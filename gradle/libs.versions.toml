@@ -18,7 +18,7 @@ okhttp = "5.1.0"
 android-application = "8.13.0"
 devtools-ksp = "2.2.20-2.0.3"
 ui-tooling-preview-android = "1.9.2"
-animation-core-android = "1.9.1"
+animation-core-android = "1.9.2"
 
 
 [libraries]

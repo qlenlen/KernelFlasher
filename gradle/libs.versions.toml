@@ -3,7 +3,7 @@ kotlin = "2.2.20"
 
 androidx-activity-compose = "1.11.0"
 androidx-appcompat = "1.7.1"
-androidx-compose = "1.9.2"
+androidx-compose = "1.9.3"
 androidx-compose-material3 = "1.4.0"
 androidx-core-ktx = "1.17.0"
 androidx-core-splashscreen = "1.0.1"

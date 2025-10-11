@@ -19,7 +19,7 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -88,7 +88,7 @@ fun RefreshableScreen(
               modifier = Modifier.padding(16.dp, 8.dp, 0.dp, 8.dp)
             ) {
               Icon(
-                Icons.AutoMirrored.Filled.ArrowBack,
+                Icons.Filled.ArrowBack,
                 contentDescription = stringResource(R.string.back),
                 tint = MaterialTheme.colorScheme.onSurface
               )

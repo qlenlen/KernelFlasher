@@ -17,7 +17,7 @@ okhttp = "5.3.2"
 
 android-application = "9.0.0"
 devtools-ksp = "2.3.4"
-ui-tooling-preview-android = "1.10.0"
+ui-tooling-preview-android = "1.10.1"
 animation-core-android = "1.10.1"
 
 

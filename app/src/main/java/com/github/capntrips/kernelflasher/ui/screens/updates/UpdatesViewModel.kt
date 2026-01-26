@@ -112,7 +112,7 @@ class UpdatesViewModel(
 
       client.newCall(request).execute().use { response ->
         if (!response.isSuccessful) throw IOException("Unexpected response: $response")
-        val update: Update = Json.decodeFromString(UpdateSerializer, response.body!!.string())
+        val update: Update = Json.decodeFromString(UpdateSerializer, response.body.string())
         update.updateUri = url
         update.lastUpdated = Date()
         val updateId = updateDao.insert(update).toInt()
@@ -133,7 +133,7 @@ class UpdatesViewModel(
 
       client.newCall(request).execute().use { response ->
         if (!response.isSuccessful) throw IOException("Unexpected response: $response")
-        val update: Update = Json.decodeFromString(UpdateSerializer, response.body!!.string())
+        val update: Update = Json.decodeFromString(UpdateSerializer, response.body.string())
         currentUpdate!!.let {
           withContext(Dispatchers.Main) {
             it.kernelName = update.kernelName
@@ -161,7 +161,7 @@ class UpdatesViewModel(
 
       client.newCall(request).execute().use { response ->
         if (!response.isSuccessful) throw IOException("Unexpected response: $response")
-        changelog = response.body!!.string()
+        changelog = response.body.string()
         withContext(Dispatchers.Main) {
           callback.invoke()
         }
@@ -190,7 +190,7 @@ class UpdatesViewModel(
 
         client.newCall(request).execute().use { response ->
           if (!response.isSuccessful) throw IOException("Unexpected response: $response")
-          response.body!!.byteStream().use { inputStream ->
+          response.body.byteStream().use { inputStream ->
             context.contentResolver.openOutputStream(uri)!!.use { outputStream ->
               inputStream.copyTo(outputStream)
             }

@@ -771,7 +771,7 @@ class SlotViewModel(
           Shell.cmd("$magiskboot cleanup").exec()
 
           addMessage("Flashing $image to $partitionName$slotSuffix ...")
-          val blockDevice = partitionName?.let {
+          val blockDevice = partitionName.let {
             PartitionUtil.findPartitionBlockDevice(
               context,
               it, slotSuffix

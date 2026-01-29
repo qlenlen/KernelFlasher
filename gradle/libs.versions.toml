@@ -1,14 +1,14 @@
 [versions]
 kotlin = "2.3.0"
 
-androidx-activity-compose = "1.12.2"
+androidx-activity-compose = "1.12.3"
 androidx-appcompat = "1.7.1"
-androidx-compose = "1.10.1"
+androidx-compose = "1.10.2"
 androidx-compose-material3 = "1.4.0"
 androidx-core-ktx = "1.17.0"
 androidx-core-splashscreen = "1.2.0"
 androidx-lifecycle = "2.10.0"
-androidx-navigation-compose = "2.9.6"
+androidx-navigation-compose = "2.9.7"
 androidx-room = "2.8.4"
 kotlinx-serialization-json = "1.10.0"
 libsu = "6.0.0"
@@ -17,8 +17,8 @@ okhttp = "5.3.2"
 
 android-application = "9.0.0"
 devtools-ksp = "2.3.4"
-ui-tooling-preview-android = "1.10.1"
-animation-core-android = "1.10.1"
+ui-tooling-preview-android = "1.10.2"
+animation-core-android = "1.10.2"
 
 
 [libraries]
@@ -49,7 +49,6 @@ androidx-animation-core-android = { group = "androidx.compose.animation", name =
 [plugins]
 android-application = { id = "com.android.application", version.ref = "android-application" }
 devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "devtools-ksp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 

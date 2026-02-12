@@ -1,7 +1,7 @@
 [versions]
 kotlin = "2.3.10"
 
-androidx-activity-compose = "1.12.3"
+androidx-activity-compose = "1.12.4"
 androidx-appcompat = "1.7.1"
 androidx-compose = "1.10.2"
 androidx-compose-material3 = "1.4.0"

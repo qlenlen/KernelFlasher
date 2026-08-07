@@ -16,7 +16,7 @@ material = "1.14.0"
 okhttp = "5.4.0"
 
 android-application = "9.3.1"
-devtools-ksp = "2.3.10"
+devtools-ksp = "2.3.11"
 ui-tooling-preview-android = "1.11.4"
 animation-core-android = "1.11.4"
 
